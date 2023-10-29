@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyBRsZ--YieqQa-a38NlFbaFIwsQGF4TECU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>3971835872</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.viptaxi.driver.RunnerTests</string>
+	<key>PROJECT_ID</key>
+	<string>viptaxi-et</string>
+	<key>STORAGE_BUCKET</key>
+	<string>viptaxi-et.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:3971835872:ios:a851bbdf8887b7bd606d85</string>
+	<key>DATABASE_URL</key>
+	<string>https://viptaxi-et-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

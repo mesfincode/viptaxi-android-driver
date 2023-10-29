@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "3971835872",
+    "firebase_url": "https://viptaxi-et-default-rtdb.firebaseio.com",
+    "project_id": "viptaxi-et",
+    "storage_bucket": "viptaxi-et.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3971835872:android:f217b1b678fb0f12606d85",
+        "android_client_info": {
+          "package_name": "com.viptaxi.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMT2qANAX6Pnx6Ah8bsuQ63p5uajMVvjk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:3971835872:android:6a2861600db389dc606d85",
+        "android_client_info": {
+          "package_name": "org.viptaxi.driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMT2qANAX6Pnx6Ah8bsuQ63p5uajMVvjk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
