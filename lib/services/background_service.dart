@@ -67,6 +67,8 @@ Future<void> initializeService() async {
       onBackground: onIosBackground,
     ),
   );
+
+  service.startService();
 }
 
 // to ensure this is executed
@@ -94,7 +96,6 @@ void onStart(ServiceInstance service) async {
 BackgroundServiceController backgroundServiceController = Get.put(BackgroundServiceController());
   // For flutter prior to version 3.0.0
   // We have to register the plugin manually
-
   SharedPreferences preferences = await SharedPreferences.getInstance();
   await preferences.setString("hello", "world");
 
@@ -145,5 +146,6 @@ BackgroundServiceController backgroundServiceController = Get.put(BackgroundServ
 
     // service.stopSelf();
   });
+  
 }
 

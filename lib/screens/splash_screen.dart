@@ -1,4 +1,5 @@
 import 'package:driver/screens/edit_profile_screen.dart';
+import 'package:driver/screens/home_screen2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -35,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
               if(value){
                   Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                  MaterialPageRoute(builder: (context) => HomeScreen2()),
                 )
               }else{
                   Navigator.pushReplacement(

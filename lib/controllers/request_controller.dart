@@ -3,11 +3,14 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:driver/constants/headers.dart';
+import 'package:driver/controllers/profile_controller.dart';
+import 'package:driver/screens/home_screen2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:get/instance_manager.dart';
 import 'package:get/route_manager.dart';
 // import 'package:get/get.dart';
 import 'package:driver/screens/home_screen.dart';
@@ -19,13 +22,13 @@ import 'package:driver/utilities/secure_storage_helper.dart';
 class RequestController extends GetxController {
   final Dio _dio = Dio();
   String? baseUrl;
-  final production = false;
+  final production = true;
 
   var _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
   SecureStorageHelper storageHelper = new SecureStorageHelper();
   final storage = new FlutterSecureStorage();
-
+ ProfileController profileController = Get.find();
   @override
   void onInit() async {
     print("call onInit"); // this line not printing
@@ -142,8 +145,9 @@ class RequestController extends GetxController {
           await storage.write(key: 'firstName', value: firstName);
           await storage.write(key: 'lastName', value: lastName);
           await storage.write(key: 'email', value: email);
-
-          Get.offAll(HomeScreen());
+          profileController.firstName = firstName;
+          
+          Get.offAll(HomeScreen2());
         }
       } else {
         // Handle error
@@ -180,13 +184,15 @@ class RequestController extends GetxController {
       }
     } catch (e) {
       // Handle error
-      print("could not logout");
-      Get.snackbar(
-        "app",
-        "could not logout try again",
-        icon: Icon(Icons.person, color: Colors.white),
-        snackPosition: SnackPosition.TOP,
-      );
+      // print("could not logout");
+      // Get.snackbar(
+      //   "app",
+      //   "could not logout try again",
+      //   icon: Icon(Icons.person, color: Colors.white),
+      //   snackPosition: SnackPosition.TOP,
+      // );
+              _isLoading.value = false;
+
       print(e);
     }
   }
@@ -218,10 +224,11 @@ class RequestController extends GetxController {
       await storage.write(key: 'lastName', value: lastName);
       await storage.write(key: 'email', value: email);
       await storage.write(key: 'driverId', value: driverId);
+          profileController.firstName = firstName;
 
       await storage.write(key: 'profileStatus', value: 'isCompleted');
 
-      Get.offAll(HomeScreen());
+      Get.offAll(HomeScreen2());
     } else {
       print("error:--$response");
     }
