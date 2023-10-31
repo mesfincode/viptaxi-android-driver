@@ -18,6 +18,7 @@ import 'package:driver/screens/login_screen.dart';
 import 'package:driver/screens/otp_screen.dart';
 import 'package:driver/screens/edit_profile_screen.dart';
 import 'package:driver/utilities/secure_storage_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RequestController extends GetxController {
   final Dio _dio = Dio();
@@ -28,7 +29,7 @@ class RequestController extends GetxController {
   bool get isLoading => _isLoading.value;
   SecureStorageHelper storageHelper = new SecureStorageHelper();
   final storage = new FlutterSecureStorage();
- ProfileController profileController = Get.find();
+ ProfileController profileController = Get.put(ProfileController());
   @override
   void onInit() async {
     print("call onInit"); // this line not printing
@@ -65,13 +66,12 @@ class RequestController extends GetxController {
           // If you want to resolve the request with some custom data,
           // you can resolve a `Response` object using `handler.resolve(response)`.
           // if()
-          if (e.response?.statusCode == 404) {}
-          print(e.response?.data);
+     
           print(e.error);
           
           Get.snackbar(
             "app",
-            "${e.message}",
+            "errorR",
             icon: Icon(Icons.person, color: Colors.white),
             snackPosition: SnackPosition.TOP,
           );
@@ -137,17 +137,22 @@ class RequestController extends GetxController {
         if (isNewUser == true || driverProfileCreated == false) {
           await storage.write(key: 'profileStatus', value: 'isNotCompleted');
 
-          Get.offAll(EditProfileScreen());
+          Get.offAll(()=>EditProfileScreen());
         } else {
           String firstName = response.data['result']['driver']['firstName'];
           String lastName = response.data['result']['driver']['firstName'];
           String email = response.data['result']['driver']['email'];
+           String driverId = response.data['result']['driver']['objectId'];
+         
           await storage.write(key: 'firstName', value: firstName);
           await storage.write(key: 'lastName', value: lastName);
           await storage.write(key: 'email', value: email);
+          await storage.write(key: 'driverId', value: driverId);
+
           profileController.firstName = firstName;
-          
-          Get.offAll(HomeScreen2());
+                await storage.write(key: 'profileStatus', value: 'isCompleted');
+
+          Get.offAll(()=>HomeScreen2());
         }
       } else {
         // Handle error
@@ -174,7 +179,7 @@ class RequestController extends GetxController {
       if (response.statusCode == 200) {
         await storage.deleteAll();
         _isLoading.value = false;
-        Get.offAll(LoginScreen());
+        Get.offAll(()=>LoginScreen());
 
         // Get.to(LoginScreen());
       } else {
@@ -228,31 +233,57 @@ class RequestController extends GetxController {
 
       await storage.write(key: 'profileStatus', value: 'isCompleted');
 
-      Get.offAll(HomeScreen2());
+      Get.offAll(()=>HomeScreen2());
     } else {
       print("error:--$response");
     }
   }
 
   Future<bool> startTripRequest(dynamic startLocation) async {
-    String userId = await storage.read(key: 'userId') ?? '';
-
+    String driverId = await storage.read(key: 'driverId') ?? '';
+    print("make trip start request");
     dynamic data = {
       'startLocation': startLocation,
       // 'endLocation': endLocation,
       'status': 'started',
-      'driver': {"__type": "Pointer", "className": "_User", "objectId": userId}
+      'totalFair': 0.0,
+      'waitingTime': '00:00:00',
+      'driver': {"__type": "Pointer", "className": "drivers", "objectId": driverId}
     };
     Response? response = await makeRequest('classes/trip', 'post', data);
+    print("trip create response $response");
+    if (response?.statusCode == 200 || response?.statusCode == 201) {
+      print("Trip created updated success $response");
+       String tripId = response!.data['objectId'];
+       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+     sharedPreferences.setString('tripId', tripId);
+
+      return true;
+    } else {
+      return false;
+    }
+
+  }
+ Future<bool> stopTripRequest(String tripId,dynamic endLocation, int price,String waitingTime) async {
+    // String userId = await storage.read(key: 'userId') ?? '';
+
+    dynamic data = {
+      // 'startLocation': startLocation,
+      'endLocation': endLocation,
+            'totalFair': price,
+      'waitingTime': waitingTime,
+      'status': 'stoped',
+      // 'driver': {"__type": "Pointer", "className": "_User", "objectId": userId}
+    };
+    Response? response = await makeRequest('classes/trip/$tripId', 'put', data);
     if (response?.statusCode == 200) {
-      print("Trip created updated success");
+      print("Trip stop  updated success");
 
       return true;
     } else {
       return false;
     }
   }
-
   Future<Response<dynamic>?> makeRequest(
       String path, String method, dynamic data) async {
     Response response;

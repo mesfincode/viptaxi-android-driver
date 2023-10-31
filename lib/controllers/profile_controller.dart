@@ -8,7 +8,6 @@ class ProfileController extends GetxController {
   String get firstName => _firstName.value;
   set firstName(String value) => _firstName.value = value;
 
-
   var _phone = ''.obs;
   String get phone => _phone.value;
   var _email = ''.obs;
@@ -20,8 +19,12 @@ class ProfileController extends GetxController {
   }
 
   void getProfile() async {
-    _phone.value = await storage.read(key: 'phone') ?? '';
-    _email.value = await storage.read(key: 'email') ?? '';
-    _firstName.value = await storage.read(key: 'firstName') ?? '';
+    try {
+      _phone.value = await storage.read(key: 'phone') ?? '';
+      _email.value = await storage.read(key: 'email') ?? '';
+      _firstName.value = await storage.read(key: 'firstName') ?? '';
+    } catch (e) {
+      print(e);
+    }
   }
 }

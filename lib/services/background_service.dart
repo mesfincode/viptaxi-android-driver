@@ -127,7 +127,7 @@ BackgroundServiceController backgroundServiceController = Get.put(BackgroundServ
 
     service.on('stop-timer1').listen((event) {
     print("stoping  timer 1");
-       backgroundServiceController.stopTimer1();
+       backgroundServiceController.stopTimer1(service);
 
     // service.stopSelf();
   });

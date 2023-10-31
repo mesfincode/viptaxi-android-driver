@@ -58,13 +58,17 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<bool> isLogedIn() async{
-       String phone = await storage.read(key: 'phone')??'';
+    try{
+   String phone = await storage.read(key: 'phone')??'';
        String sessionToken = await storage.read(key: 'sessionToken')??'';
        if(phone.isNotEmpty && sessionToken.isNotEmpty){
         return true;
        }else{
           return false;
        }
+    }catch(e){
+           return false;
+    }
            
   }
     Future<bool> isProfileCompleted() async{
