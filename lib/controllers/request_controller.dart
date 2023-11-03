@@ -29,11 +29,12 @@ class RequestController extends GetxController {
   bool get isLoading => _isLoading.value;
   SecureStorageHelper storageHelper = new SecureStorageHelper();
   final storage = new FlutterSecureStorage();
- ProfileController profileController = Get.put(ProfileController());
+  ProfileController profileController = Get.put(ProfileController());
   @override
   void onInit() async {
     print("call onInit"); // this line not printing
-
+    _dio.options.connectTimeout = Duration(seconds: 5); // 5 seconds
+    _dio.options.receiveTimeout = Duration(seconds: 5); // 3 seconds
     if (!production) {
       (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
           (client) {
@@ -66,15 +67,11 @@ class RequestController extends GetxController {
           // If you want to resolve the request with some custom data,
           // you can resolve a `Response` object using `handler.resolve(response)`.
           // if()
-     
+
           print(e.error);
-          
-          Get.snackbar(
-            "app",
-            "errorR",
-            icon: Icon(Icons.person, color: Colors.white),
-            snackPosition: SnackPosition.TOP,
-          );
+          print(e.message);
+//  print(e.);
+
           return handler.next(e);
         },
       ),
@@ -100,11 +97,24 @@ class RequestController extends GetxController {
         // Handle error
         _isLoading.value = false;
         print("Response Error: ${response.data}");
+        Get.snackbar(
+          "Vip Taxi",
+          "Request failed ! Try again",
+          backgroundColor: Colors.red,
+          icon: const Icon(Icons.add_alert),
+          snackPosition: SnackPosition.TOP,
+        );
       }
     } catch (e) {
       // Handle error
       _isLoading.value = false;
-
+      Get.snackbar(
+        "Vip Taxi",
+        "Request failed ! Try again",
+        backgroundColor: Colors.red,
+        icon: const Icon(Icons.add_alert),
+        snackPosition: SnackPosition.TOP,
+      );
       print("err: ${e.toString()}");
     }
   }
@@ -137,22 +147,22 @@ class RequestController extends GetxController {
         if (isNewUser == true || driverProfileCreated == false) {
           await storage.write(key: 'profileStatus', value: 'isNotCompleted');
 
-          Get.offAll(()=>EditProfileScreen());
+          Get.offAll(() => EditProfileScreen());
         } else {
           String firstName = response.data['result']['driver']['firstName'];
           String lastName = response.data['result']['driver']['firstName'];
           String email = response.data['result']['driver']['email'];
-           String driverId = response.data['result']['driver']['objectId'];
-         
+          String driverId = response.data['result']['driver']['objectId'];
+
           await storage.write(key: 'firstName', value: firstName);
           await storage.write(key: 'lastName', value: lastName);
           await storage.write(key: 'email', value: email);
           await storage.write(key: 'driverId', value: driverId);
 
           profileController.firstName = firstName;
-                await storage.write(key: 'profileStatus', value: 'isCompleted');
+          await storage.write(key: 'profileStatus', value: 'isCompleted');
 
-          Get.offAll(()=>HomeScreen2());
+          Get.offAll(() => HomeScreen2());
         }
       } else {
         // Handle error
@@ -179,7 +189,7 @@ class RequestController extends GetxController {
       if (response.statusCode == 200) {
         await storage.deleteAll();
         _isLoading.value = false;
-        Get.offAll(()=>LoginScreen());
+        Get.offAll(() => LoginScreen());
 
         // Get.to(LoginScreen());
       } else {
@@ -190,13 +200,15 @@ class RequestController extends GetxController {
     } catch (e) {
       // Handle error
       // print("could not logout");
-      // Get.snackbar(
-      //   "app",
-      //   "could not logout try again",
-      //   icon: Icon(Icons.person, color: Colors.white),
-      //   snackPosition: SnackPosition.TOP,
-      // );
-              _isLoading.value = false;
+      Get.snackbar(
+        "Vip Taxi",
+        "could not logout try again",
+          backgroundColor: Colors.red,
+        icon: const Icon(Icons.add_alert),
+        snackPosition: SnackPosition.TOP,
+      );
+      
+      _isLoading.value = false;
 
       print(e);
     }
@@ -205,12 +217,13 @@ class RequestController extends GetxController {
   Future<void> createDriver(
       String firstName, String lastName, String email) async {
     String userId = await storage.read(key: 'userId') ?? '';
+    String phone = await storage.read(key: 'phone') ?? '';
 
     dynamic data = {
       'firstName': firstName,
       'lastName': lastName,
       'email': email,
-      // 'driverId':userId
+      'phoneNumber': phone,
       'driverId': {
         "__type": "Pointer",
         "className": "_User",
@@ -229,11 +242,11 @@ class RequestController extends GetxController {
       await storage.write(key: 'lastName', value: lastName);
       await storage.write(key: 'email', value: email);
       await storage.write(key: 'driverId', value: driverId);
-          profileController.firstName = firstName;
+      profileController.firstName = firstName;
 
       await storage.write(key: 'profileStatus', value: 'isCompleted');
 
-      Get.offAll(()=>HomeScreen2());
+      Get.offAll(() => HomeScreen2());
     } else {
       print("error:--$response");
     }
@@ -248,29 +261,36 @@ class RequestController extends GetxController {
       'status': 'started',
       'totalFair': 0.0,
       'waitingTime': '00:00:00',
-      'driver': {"__type": "Pointer", "className": "drivers", "objectId": driverId}
+      'driver': {
+        "__type": "Pointer",
+        "className": "drivers",
+        "objectId": driverId
+      }
     };
     Response? response = await makeRequest('classes/trip', 'post', data);
     print("trip create response $response");
     if (response?.statusCode == 200 || response?.statusCode == 201) {
       print("Trip created updated success $response");
-       String tripId = response!.data['objectId'];
-       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-     sharedPreferences.setString('tripId', tripId);
+      String tripId = response!.data['objectId'];
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      sharedPreferences.setString('tripId', tripId);
 
       return true;
     } else {
       return false;
     }
-
   }
- Future<bool> stopTripRequest(String tripId,dynamic endLocation, int price,String waitingTime) async {
+
+  Future<bool> stopTripRequest(String tripId, dynamic endLocation, int distance,
+      int price, String waitingTime) async {
     // String userId = await storage.read(key: 'userId') ?? '';
 
     dynamic data = {
       // 'startLocation': startLocation,
       'endLocation': endLocation,
-            'totalFair': price,
+      'distnace': distance,
+      'totalFair': price,
       'waitingTime': waitingTime,
       'status': 'stoped',
       // 'driver': {"__type": "Pointer", "className": "_User", "objectId": userId}
@@ -284,6 +304,7 @@ class RequestController extends GetxController {
       return false;
     }
   }
+
   Future<Response<dynamic>?> makeRequest(
       String path, String method, dynamic data) async {
     Response response;
@@ -319,14 +340,34 @@ class RequestController extends GetxController {
         _isLoading.value = false;
         return response;
       }
-    } catch (e) {
+    } catch (error) {
       // Handle error
-      print("could not make request ${e}");
+      // print("could not make request ${error}");
 
       _isLoading.value = false;
       // throw Exception('Error occurred: $e');
       // return  Response
       // return null;
+      Get.snackbar(
+        "Vip Taxi",
+        "Request failed ! Try again",
+        backgroundColor: Colors.red,
+        icon: const Icon(Icons.add_alert),
+        snackPosition: SnackPosition.TOP,
+      );
+      // if (error is DioException) {
+      //   if (error.response != null) {
+      //     // The request was made and the server responded with a status code
+      //     int statusCode = error.response!.statusCode!;
+      //     print('Error status code: $statusCode');
+      //   } else {
+      //     // Something went wrong during the request setup
+      //     print('Error: ${error.message}');
+      //   }
+      // } else {
+      //   // Something else went wrong
+      //   print('Error: $error');
+      // }
     }
     return null;
   }

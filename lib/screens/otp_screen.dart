@@ -63,16 +63,16 @@ class _OTPScreenState extends State<OTPScreen> {
                 },
               ),
               SizedBox(height: 16.0),
-                 Obx((){
+               
+              SizedBox(height: 20,),
+              Center(
+                child:
+                
+                  Obx((){
                 if(authController.isLoading){
                   return CircularProgressIndicator();
                 }else{
-                  return Container();
-                }
-              }),
-              SizedBox(height: 20,),
-              Center(
-                child: OutlinedButton(
+                  return OutlinedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
@@ -83,7 +83,10 @@ class _OTPScreenState extends State<OTPScreen> {
                     }
                   },
                   child: Text('Verify OTP'),
-                ),
+                );
+                }
+              }),
+                 
               ),
             ],
           ),

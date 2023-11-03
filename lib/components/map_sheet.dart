@@ -33,9 +33,10 @@ class _MapSheetState extends State<MapSheet> {
     );
     StreamSubscription<Position> positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
-            .listen((Position? position) {
+            .listen((Position position) {
       setState(() => {
             _currentPosition = position,
+       storeCurrentPosition(position),
             _mapController?.animateCamera(CameraUpdate.newLatLng(
                 LatLng(position!.latitude, position!.longitude)))
           });
@@ -44,6 +45,15 @@ class _MapSheetState extends State<MapSheet> {
           : '${position.latitude.toString()}, ${position.longitude.toString()}, ${position.speed.toString()}');
     });
     super.initState();
+  }
+
+  void storeCurrentPosition(Position position)async{
+            SharedPreferences sharedPreferences =await SharedPreferences.getInstance();
+            
+            await sharedPreferences.setString('currentLatitude', position.latitude.toString());
+            await sharedPreferences.setString('currentLongitude', position.longitude.toString());
+
+
   }
 
   //  void getDriver() async {

@@ -6,12 +6,15 @@ import 'package:driver/components/hamberger_menu.dart';
 import 'package:driver/components/map_sheet.dart';
 import 'package:driver/controllers/permission_controller.dart';
 import 'package:driver/controllers/position_controller.dart';
+import 'package:driver/controllers/trip_controller.dart';
 import 'package:driver/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class HomeScreen2 extends StatefulWidget {
   const HomeScreen2({super.key});
@@ -26,10 +29,15 @@ class _HomeScreen2State extends State<HomeScreen2> {
   @override
   void initState() {
     // TODO: implement initState
+    initialize();
     getTripStatus();
     super.initState();
   }
 
+ void initialize() async{
+
+  WakelockPlus.enable();
+ }
   void getTripStatus() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     tripStatus = sharedPreferences.getString('tripStatus') ?? '';
@@ -51,7 +59,7 @@ class _HomeScreen2State extends State<HomeScreen2> {
           child: Stack(children: [
             MapSheet(),
             HambergerMenu(),
-            DashboardV2( tripStatus: tripStatus,)
+            DashboardV2( )
             // RecenterButton(
             //     controller: _controller,
             //     positionController: positionController),
@@ -201,12 +209,12 @@ class _HomeScreen2State extends State<HomeScreen2> {
 // }
 
 class DashboardV2 extends StatefulWidget {
-  final String tripStatus;
+  // final String tripStatus;
   // final VoidCallback function;
   // final PositionController positionController;
   const DashboardV2({
     super.key,
-    required this.tripStatus,
+    // required this.tripStatus,
     // required this.positionController,
   });
 
@@ -239,6 +247,7 @@ class _DashboardV2State extends State<DashboardV2> {
   Widget build(
     BuildContext context,
   ) {
+    TripController tripController = Get.put(TripController());
     return Positioned(
         top: 90,
         right: 0,
@@ -263,11 +272,11 @@ class _DashboardV2State extends State<DashboardV2> {
           child: StreamBuilder<Map<String, dynamic>?>(
               stream: FlutterBackgroundService().on('update'),
               builder: (context, snapshot) {
-                num? speed = snapshot.data?["speed"] ?? 0;
-                num? speed_km = snapshot.data?["speed_km"] ?? 0;
-                num? distance = snapshot.data?["distance"] ?? 0;
-                num? price = snapshot.data?["price"] ?? 0;
-                String? time = snapshot.data?["time"] ?? "00:00:00";
+                // num? speed = snapshot.data?["speed"] ?? 0;
+                num speed_km = snapshot.data?["speed_km"] ?? 0;
+                num distance = snapshot.data?["distance"] ?? 0;
+                num price = snapshot.data?["price"] ?? 0;
+                String time = snapshot.data?["time"] ?? "00:00:00";
 
                 return Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -275,13 +284,19 @@ class _DashboardV2State extends State<DashboardV2> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          StreamBuilder<Map<String, dynamic>?>(
+                         Obx(() {
+                                                                // SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+                               if(tripController.isLoading){
+                                return CircularProgressIndicator();
+                               }else{
+                                return  StreamBuilder<Map<String, dynamic>?>(
                               stream:
                                   FlutterBackgroundService().on('trip'),
-                              builder: (context, snapshot) {
-                                String timer_status;
+                              builder:   (context, snapshot) {
+                                String timer_status='';
                                 if (snapshot.data == null) {
-                                  timer_status =widget.tripStatus;
+                                    timer_status = tripController.tripStatus;
                                 } else {
                                   timer_status =
                                       snapshot.data?["tripStatus"] ?? "stoped";
@@ -307,8 +322,9 @@ class _DashboardV2State extends State<DashboardV2> {
                                                 FlutterBackgroundService();
                                             var isRunning =
                                                 await service.isRunning();
-                                            service.invoke("start-timer1");
-                                            setState(() {});
+                                                print('trip create confirmed');
+                                           tripController.startTrip();
+                                            // setState(() {});
                                             // Get.snackbar('Trip Started', 'Wish you good ride');
                                            
                                           } else {
@@ -334,15 +350,13 @@ class _DashboardV2State extends State<DashboardV2> {
                                           if (value != null && value) {
                                             // User clicked 'Yes', perform the desired action
                                             // Add your code here
-                                            final service =
-                                                FlutterBackgroundService();
-                                            var isRunning =
-                                                await service.isRunning();
-                                            service.invoke("stop-timer1");
-                                            setState(() {});
+                                            // final service =
+                                            //     FlutterBackgroundService();
+                                            // var isRunning =
+                                            //     await service.isRunning();
+                                            tripController.stopTrip(price,distance,time);
 
-                                            showTripReportDialog(
-                                                context, price, distance, time);
+                                          // setState(() {});
                                           } else {
                                             // User clicked 'No' or pressed outside the dialog
                                             // Add your code here
@@ -351,7 +365,11 @@ class _DashboardV2State extends State<DashboardV2> {
                                       },
                                       child: Text("Stop"));
                                 }
-                              }),
+                              });
+                         
+                               }
+                         }),
+                         
                           Text(
                             "$price Birr",
                             style: TextStyle(
@@ -477,6 +495,7 @@ class _DashboardV2State extends State<DashboardV2> {
               ],
             ),
           ),
+         
           actions: [
             OutlinedButton(
               child: Text('Close'),
@@ -490,7 +509,65 @@ class _DashboardV2State extends State<DashboardV2> {
       },
     );
   }
-
+void showDiaalog( num? price, num? distance, String? time){
+   Get.defaultDialog(
+    title: "Vip taxi trip report",
+    content:  SingleChildScrollView(
+            child: Column(
+              children: [
+                // Text(
+                //   "Trip Report ",
+                //   style: TextStyle(color: Colors.black, fontSize: 20),
+                // ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Total Price: ",
+                      style: TextStyle(color: Colors.green, fontSize: 20),
+                    ),
+                    Text("$price Birr",
+                        style: TextStyle(color: Colors.green, fontSize: 20))
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Distance: ",
+                        style: TextStyle(color: Colors.green, fontSize: 20)),
+                    Text("${distance?.toStringAsFixed(2) ?? ''}Km",
+                        style: TextStyle(color: Colors.green, fontSize: 20))
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Waiting time: ",
+                        style: TextStyle(color: Colors.green, fontSize: 20)),
+                    Text("$time ",
+                        style: TextStyle(color: Colors.green, fontSize: 20))
+                  ],
+                ),
+              ],
+            ),
+          ),
+         
+    actions: [
+      TextButton(
+        onPressed: () => Get.back(),
+        child: Text("Cancel"),
+      ),
+      TextButton(
+        onPressed: () {
+          // Perform action when the dialog button is pressed
+          Get.back();
+        },
+        child: Text("OK"),
+      ),
+    ],
+  );
+}
+  
   Future<dynamic> showStopDialog(BuildContext context) {
     return showDialog(
       context: context,

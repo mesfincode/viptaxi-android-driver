@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/instance_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:driver/controllers/background_service_controller.dart';
@@ -52,7 +53,7 @@ Future<void> initializeService() async {
       isForegroundMode: true,
 
       notificationChannelId: 'my_foreground',
-      initialNotificationTitle: 'AWESOME SERVICE',
+      initialNotificationTitle: 'Vip Taxi',
       initialNotificationContent: 'Initializing',
       foregroundServiceNotificationId: 888,
     ),
@@ -71,19 +72,13 @@ Future<void> initializeService() async {
   service.startService();
 }
 
-// to ensure this is executed
-// run app from xcode, then from xcode menu, select Simulate Background Fetch
 
 @pragma('vm:entry-point')
 Future<bool> onIosBackground(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  // SharedPreferences preferences = await SharedPreferences.getInstance();
-  // await preferences.reload();
-  // final log = preferences.getStringList('log') ?? <String>[];
-  // log.add(DateTime.now().toIso8601String());
-  // await preferences.setStringList('log', log);
+
 
   return true;
 }
@@ -147,5 +142,49 @@ BackgroundServiceController backgroundServiceController = Get.put(BackgroundServ
     // service.stopSelf();
   });
   
+
+  if (service is AndroidServiceInstance) {
+    if (await service.isForegroundService()) {
+      service.setForegroundNotificationInfo(
+        title: "VIP TAXI",
+        content: "vip taxi is running",
+      );
+    }
+  }
+  startTrackingLocation();
 }
+
+  void startTrackingLocation() async{
+       final hasPermission = await _handleLocationPermission();
+
+    if (!hasPermission) return;
+          Geolocator.getPositionStream(
+                  locationSettings: LocationSettings(
+                accuracy: LocationAccuracy.bestForNavigation,
+                distanceFilter: 100,
+              )).listen((Position? position) {
+                print(position == null
+                    ? 'Unknown'
+                    : '${position.latitude.toString()}, ${position.longitude.toString()}, ${position.speed.toString()}');
+              });
+  }
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      if (permission == LocationPermission.denied) {
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return false;
+    }
+    return true;
+  }
 

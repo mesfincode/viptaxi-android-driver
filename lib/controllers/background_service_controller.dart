@@ -26,7 +26,7 @@ class BackgroundServiceController extends GetxController
   double _distance = 0.0;
 // double _speed = 0.0;
   double _speed_km = 0.0;
-  String waitingTime='';
+  String waitingTime = '';
   int _price = 0;
   Geodesy _geodesy = Geodesy();
 
@@ -40,7 +40,9 @@ class BackgroundServiceController extends GetxController
   int nightKilloMeterPrice = 120;
   final storage = new FlutterSecureStorage();
   String? tripStatus;
-  RequestController requestController = Get.put(RequestController());
+
+  int seconds = 0, miniuts = 0, hours = 0;
+  String digitSeconds = "00", digitMinutes = "00", digitHours = "00";
 
   @override
   void onInit() {
@@ -48,7 +50,7 @@ class BackgroundServiceController extends GetxController
     WidgetsBinding.instance.addObserver(this);
     getTripStatus();
     _getCurrentPosition();
-     startTrackingLocation() ;
+    startTrackingLocation();
   }
 
   void getTripStatus() async {
@@ -71,9 +73,10 @@ class BackgroundServiceController extends GetxController
       // requestLocationPermission();
       getTripStatus();
       _getCurrentPosition();
-       startTrackingLocation() ;
+      startTrackingLocation();
     }
   }
+
   Future<void> _getCurrentPosition() async {
     final hasPermission = await _handleLocationPermission();
 
@@ -88,29 +91,13 @@ class BackgroundServiceController extends GetxController
       debugPrint(e);
     });
   }
+
   void startTimer1(ServiceInstance service) async {
     _getCurrentPosition();
-    int seconds = 0, miniuts = 0, hours = 0;
-    String digitSeconds = "00", digitMinutes = "00", digitHours = "00";
+      startTrackingLocation();
+
     DateTime _startTime;
-bool tripCreatedOnServer;
-    if(_currentPosition == null){
-         tripCreatedOnServer = await requestController.startTripRequest(
-        {'latitude': "", 'longitude': "", 'geohash': 'aksjff'});
-
-    }else{
-         tripCreatedOnServer = await requestController.startTripRequest(
-        {'latitude': _currentPosition!.latitude, 'longitude': _currentPosition!.longitude, 'geohash': 'aksjff'});
-
-    }
-  
-    if (tripCreatedOnServer) {
-      print('trip created on the server continue');
-    } else {
-      print('trip not created on the server');
-      return;
-    }
-
+    //  stopTimer1(service);
     if (_timer1 == null) {
       seconds = 0;
       miniuts = 0;
@@ -127,7 +114,7 @@ bool tripCreatedOnServer;
       final now = DateTime.now();
       final isDay = isTimeBetween(
           now, TimeOfDay(hour: 7, minute: 0), TimeOfDay(hour: 19, minute: 0));
-      _timer1 = Timer.periodic(Duration(seconds: 1), (Timer timer) async {
+      _timer1 = Timer.periodic(Duration(seconds: 2), (Timer timer) async {
         print('timer---1 E: ${DateTime.now()}');
 
         int localSeconds = seconds;
@@ -159,7 +146,7 @@ bool tripCreatedOnServer;
         // final actualTime = currentTime.difference(_startTime).inMilliseconds;
 
         // print('FLUTTER BACKGROUND SERVICE: ${_formatTime(actualTime)}');
-      waitingTime = time;
+        waitingTime = time;
         processLocation(service, time, hours, miniuts, isDay);
         // Do something when the timer expires
       });
@@ -261,11 +248,12 @@ bool tripCreatedOnServer;
     return dateTimeInTimeRange;
   }
 
-  void startTrackingLocation() {
-    _handleLocationPermission().then((value) => {
-          if (value)
-            {
-              Geolocator.getPositionStream(
+  void startTrackingLocation() async{
+       final hasPermission = await _handleLocationPermission();
+
+    if (!hasPermission) return;
+       _handleLocationPermission();
+          Geolocator.getPositionStream(
                   locationSettings: LocationSettings(
                 accuracy: LocationAccuracy.bestForNavigation,
                 distanceFilter: 100,
@@ -273,33 +261,33 @@ bool tripCreatedOnServer;
                 print(position == null
                     ? 'Unknown'
                     : '${position.latitude.toString()}, ${position.longitude.toString()}, ${position.speed.toString()}');
-              })
-            }
-        });
+              });
   }
 
   void stopTimer1(ServiceInstance service) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    await sharedPreferences.setString('tripStatus', 'stoped');
-    String tripId = await sharedPreferences.getString('tripId') ?? '';
-    RequestController requestController = Get.put(RequestController());
-    bool tripCreatedOnServer = await requestController.stopTripRequest(tripId,
-        {'latitude': _currentPosition!.latitude, 'longitude': _currentPosition!.longitude, 'geohash': 'aksjff'}, _price,waitingTime);
-    if (tripCreatedOnServer) {
-      if (_timer1 != null) {
-        _timer1?.cancel(); // Cancel the timer if it's running
-        _timer1 = null; // Set the timer instance to null
-      }
-      service.invoke(
-        'trip',
-        {"tripStatus": "stoped"},
-      );
-      print('trip created on the server continue');
-    } else {
-      print('trip not created on the server');
-      // await sharedPreferences.setString('tripStatus', 'stoped');
-      return;
+    startTrackingLocation();
+    if (_timer1 != null) {
+      _timer1?.cancel(); // Cancel the timer if it's running
+      _timer1 = null; // Set the timer instance to null
+
+      seconds = 0;
+      miniuts = 0;
+      hours = 0;
+      digitSeconds = "00";
+      digitHours = "00";
+      digitMinutes = "00";
+
+      _distance = 0.0;
+
+      _price = 0;
     }
+       SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      await sharedPreferences.setString('tripStatus', 'stoped');
+    service.invoke(
+      'trip',
+      {"tripStatus": "stoped"},
+    );
   }
 
   void startTimer2(ServiceInstance service) {
@@ -363,4 +351,3 @@ bool tripCreatedOnServer;
     return true;
   }
 }
-

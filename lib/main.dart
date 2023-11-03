@@ -7,11 +7,20 @@ import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
 import 'package:driver/screens/splash_screen.dart';
 import 'package:driver/services/background_service.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'controllers/network_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Permission.notification.isDenied.then(
+    (value) {
+      if (value) {
+        Permission.notification.request();
+      }
+    },
+  );
   await initializeService();
   runApp(const MyApp());
 }
