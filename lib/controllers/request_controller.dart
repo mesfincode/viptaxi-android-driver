@@ -5,6 +5,7 @@ import 'package:dio/io.dart';
 import 'package:driver/constants/headers.dart';
 import 'package:driver/controllers/profile_controller.dart';
 import 'package:driver/screens/home_screen2.dart';
+import 'package:driver/services/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -122,6 +123,7 @@ class RequestController extends GetxController {
   Future<void> verityOtpAndSignin(String phone, String otp) async {
     try {
       _isLoading.value = true;
+  String? fcmToken= await FirebaseMessagingService().getDeviceToken();
 
       final response = await _dio.post('$baseUrl/functions/auth',
           options: options,
@@ -146,13 +148,14 @@ class RequestController extends GetxController {
 
         if (isNewUser == true || driverProfileCreated == false) {
           await storage.write(key: 'profileStatus', value: 'isNotCompleted');
-
+           
           Get.offAll(() => EditProfileScreen());
         } else {
           String firstName = response.data['result']['driver']['firstName'];
           String lastName = response.data['result']['driver']['firstName'];
           String email = response.data['result']['driver']['email'];
           String driverId = response.data['result']['driver']['objectId'];
+          updateDriver(driverId);
 
           await storage.write(key: 'firstName', value: firstName);
           await storage.write(key: 'lastName', value: lastName);
@@ -213,17 +216,43 @@ class RequestController extends GetxController {
       print(e);
     }
   }
+  Future<void> updateDriver(String driverId) async {
+    // String driverId = await storage.read(key: 'driverId') ?? '';
+  
+  String? fcmToken= await FirebaseMessagingService().getDeviceToken();
+    dynamic data = {
+      // 'firstName': firstName,
+      // 'lastName': lastName,
+      // 'email': email,
+      // 'phoneNumber': phone,
+      'fcmTocken': fcmToken,
+      // 'driverId': {
+      //   "__type": "Pointer",
+      //   "className": "_User",
+      //   "objectId": userId
+      // }
+    };
 
+    Response? response = await makeRequest('classes/drivers/${driverId}', 'put', data);
+    print('responsCode: ${response?.statusCode}');
+    if (response?.statusCode == 200 || response?.statusCode == 201) {
+      print("Fcm uodated updated success-----------");
+    
+    } else {
+      print("error:--$response");
+    }
+  }
   Future<void> createDriver(
       String firstName, String lastName, String email) async {
     String userId = await storage.read(key: 'userId') ?? '';
     String phone = await storage.read(key: 'phone') ?? '';
-
+  String? fcmToken= await FirebaseMessagingService().getDeviceToken();
     dynamic data = {
       'firstName': firstName,
       'lastName': lastName,
       'email': email,
       'phoneNumber': phone,
+      'fcmTocken': fcmToken,
       'driverId': {
         "__type": "Pointer",
         "className": "_User",

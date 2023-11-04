@@ -43,11 +43,10 @@ class PermissionController extends GetxController with WidgetsBindingObserver {
 
     permission = await Geolocator.checkPermission();
 
-    if (permission != LocationPermission.whileInUse) {
+    if (permission != LocationPermission.always) {
       //  final info = await PackageInfo.fromPlatform();
-      // showLocationPermissionDialog(
-      //     "Allow location permission to use the application");
-      permission = await Geolocator.requestPermission();
+      showLocationPermissionDialog(
+          "Please change location permission to Allow all the time");
     } else {
       _locationPermissionGranted.value = true;
     }

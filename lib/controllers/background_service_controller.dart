@@ -114,7 +114,7 @@ class BackgroundServiceController extends GetxController
       final now = DateTime.now();
       final isDay = isTimeBetween(
           now, TimeOfDay(hour: 7, minute: 0), TimeOfDay(hour: 19, minute: 0));
-      _timer1 = Timer.periodic(Duration(seconds: 2), (Timer timer) async {
+      _timer1 = Timer.periodic(Duration(seconds: 1), (Timer timer) async {
         print('timer---1 E: ${DateTime.now()}');
 
         int localSeconds = seconds;
@@ -248,12 +248,11 @@ class BackgroundServiceController extends GetxController
     return dateTimeInTimeRange;
   }
 
-  void startTrackingLocation() async{
-       final hasPermission = await _handleLocationPermission();
-
-    if (!hasPermission) return;
-       _handleLocationPermission();
-          Geolocator.getPositionStream(
+  void startTrackingLocation() {
+    _handleLocationPermission().then((value) => {
+          if (value)
+            {
+              Geolocator.getPositionStream(
                   locationSettings: LocationSettings(
                 accuracy: LocationAccuracy.bestForNavigation,
                 distanceFilter: 100,
@@ -261,11 +260,12 @@ class BackgroundServiceController extends GetxController
                 print(position == null
                     ? 'Unknown'
                     : '${position.latitude.toString()}, ${position.longitude.toString()}, ${position.speed.toString()}');
-              });
+              })
+            }
+        });
   }
 
   void stopTimer1(ServiceInstance service) async {
-    startTrackingLocation();
     if (_timer1 != null) {
       _timer1?.cancel(); // Cancel the timer if it's running
       _timer1 = null; // Set the timer instance to null

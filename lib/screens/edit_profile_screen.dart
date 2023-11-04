@@ -20,7 +20,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile'),
+        title: Text('Set up your profile'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

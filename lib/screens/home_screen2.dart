@@ -8,6 +8,7 @@ import 'package:driver/controllers/permission_controller.dart';
 import 'package:driver/controllers/position_controller.dart';
 import 'package:driver/controllers/trip_controller.dart';
 import 'package:driver/screens/login_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:badges/badges.dart' as badges;
 
 class HomeScreen2 extends StatefulWidget {
   const HomeScreen2({super.key});
@@ -31,11 +33,25 @@ class _HomeScreen2State extends State<HomeScreen2> {
     // TODO: implement initState
     initialize();
     getTripStatus();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  print('Got a message whilst in the foreground!');
+  print('Message data: ${message.data}');
+
+  if (message.notification != null) {
+    print('Message also contained a notification: ${message.notification}');
+  }
+});
     super.initState();
   }
 
  void initialize() async{
-
+await Permission.notification.isDenied.then(
+    (value) {
+      if (value) {
+        Permission.notification.request();
+      }
+    },
+  );
   WakelockPlus.enable();
  }
   void getTripStatus() async {
@@ -50,6 +66,7 @@ class _HomeScreen2State extends State<HomeScreen2> {
     final screenWidth = MediaQuery.of(context).size.width;
     final drawerWidth = screenWidth * 0.60;
     // PositionController positionController = Get.put(PositionController());
+    PermissionController permissionController = Get.put(PermissionController());
     return Scaffold(
       drawer: DrawerMenu(drawerWidth: drawerWidth, driverName: driverName),
       body: Container(
@@ -59,7 +76,26 @@ class _HomeScreen2State extends State<HomeScreen2> {
           child: Stack(children: [
             MapSheet(),
             HambergerMenu(),
-            DashboardV2( )
+            DashboardV2( ),
+             Positioned(
+            top: 35,
+            right: 16,
+            child: badges.Badge(
+                   position: badges.BadgePosition.topEnd(top: 0, end: -2),
+      showBadge: false,
+      ignorePointer: false,
+      onTap: () {},
+              badgeContent: Text('3'),
+              child: IconButton(
+                iconSize: 35,
+                color: Colors.blue,
+                icon: Icon(Icons.notifications),
+                onPressed: () {
+                  // Handle button press
+                },
+              ),
+            ),
+          ),
             // RecenterButton(
             //     controller: _controller,
             //     positionController: positionController),

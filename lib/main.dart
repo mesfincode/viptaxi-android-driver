@@ -2,6 +2,9 @@ import 'package:driver/controllers/background_service_controller.dart';
 import 'package:driver/controllers/permission_controller.dart';
 import 'package:driver/controllers/position_controller.dart';
 import 'package:driver/controllers/profile_controller.dart';
+import 'package:driver/firebase_options.dart';
+import 'package:driver/services/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
@@ -14,13 +17,12 @@ import 'controllers/network_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Permission.notification.isDenied.then(
-    (value) {
-      if (value) {
-        Permission.notification.request();
-      }
-    },
+     await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+
+        FirebaseMessagingService().initialize();
+
   await initializeService();
   runApp(const MyApp());
 }
@@ -31,6 +33,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
@@ -38,7 +41,7 @@ class MyApp extends StatelessWidget {
           Get.lazyPut<NetworkController>(() => NetworkController());
           Get.put(ProfileController());
           Get.put(BackgroundServiceController());
-          Get.put(PermissionController());
+          // Get.put(PermissionController());
         }),
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

@@ -152,6 +152,7 @@ BackgroundServiceController backgroundServiceController = Get.put(BackgroundServ
     }
   }
   startTrackingLocation();
+  
 }
 
   void startTrackingLocation() async{
