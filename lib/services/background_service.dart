@@ -85,6 +85,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
+  
   // Only available for flutter 3.0.0 and later
   print("starting background service");
   DartPluginRegistrant.ensureInitialized();
