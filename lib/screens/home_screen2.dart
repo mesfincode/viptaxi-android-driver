@@ -1,16 +1,20 @@
 import 'dart:async';
 
+import 'package:driver/components/bottom_sheet_comp.dart';
 import 'package:driver/components/connection_indicator.dart';
 import 'package:driver/components/drawer_menu.dart';
 import 'package:driver/components/hamberger_menu.dart';
 import 'package:driver/components/map_sheet.dart';
+import 'package:driver/components/trip_request.dart';
 import 'package:driver/controllers/permission_controller.dart';
 import 'package:driver/controllers/position_controller.dart';
 import 'package:driver/controllers/trip_controller.dart';
 import 'package:driver/screens/login_screen.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -44,16 +48,17 @@ class _HomeScreen2State extends State<HomeScreen2> {
     super.initState();
   }
 
- void initialize() async{
-await Permission.notification.isDenied.then(
-    (value) {
-      if (value) {
-        Permission.notification.request();
-      }
-    },
-  );
-  WakelockPlus.enable();
- }
+  void initialize() async {
+    await Permission.notification.isDenied.then(
+      (value) {
+        if (value) {
+          Permission.notification.request();
+        }
+      },
+    );
+    WakelockPlus.enable();
+  }
+
   void getTripStatus() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     tripStatus = sharedPreferences.getString('tripStatus') ?? '';
@@ -76,26 +81,27 @@ await Permission.notification.isDenied.then(
           child: Stack(children: [
             MapSheet(),
             HambergerMenu(),
-            DashboardV2( ),
-             Positioned(
-            top: 35,
-            right: 16,
-            child: badges.Badge(
-                   position: badges.BadgePosition.topEnd(top: 0, end: -2),
-      showBadge: false,
-      ignorePointer: false,
-      onTap: () {},
-              badgeContent: Text('3'),
-              child: IconButton(
-                iconSize: 35,
-                color: Colors.blue,
-                icon: Icon(Icons.notifications),
-                onPressed: () {
-                  // Handle button press
-                },
+            DashboardV2(),
+            Positioned(
+              top: 35,
+              right: 16,
+              child: badges.Badge(
+                position: badges.BadgePosition.topEnd(top: 0, end: -2),
+                showBadge: false,
+                ignorePointer: false,
+                onTap: () {},
+                badgeContent: Text('3'),
+                child: IconButton(
+                  iconSize: 35,
+                  color: Colors.blue,
+                  icon: Icon(Icons.notifications),
+                  onPressed: () {
+                    // Handle button press
+                  },
+                ),
               ),
             ),
-          ),
+            // TripRequest()
             // RecenterButton(
             //     controller: _controller,
             //     positionController: positionController),
@@ -189,11 +195,10 @@ await Permission.notification.isDenied.then(
             //         ),
             //       ],
             //     ))
-          
           ]),
         ),
       ),
-      bottomSheet: BottomConnectionIndicator(),
+      bottomSheet: BottomSheetComponent(),
       // floatingActionButton: FloatingActionButton.extended(
       //   onPressed: _goToTheLake,
       //   label: const Text('To the lake!'),
@@ -260,7 +265,9 @@ class DashboardV2 extends StatefulWidget {
 
 class _DashboardV2State extends State<DashboardV2> {
   bool started = false;
-
+    DatabaseReference ref = FirebaseDatabase.instance.ref('drivers');
+  final storage = new FlutterSecureStorage();
+  
   Future<bool> getTimerStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool("started") ?? false;
@@ -284,6 +291,8 @@ class _DashboardV2State extends State<DashboardV2> {
     BuildContext context,
   ) {
     TripController tripController = Get.put(TripController());
+  
+
     return Positioned(
         top: 90,
         right: 0,
@@ -320,92 +329,89 @@ class _DashboardV2State extends State<DashboardV2> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                         Obx(() {
-                                                                // SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                          Obx(() {
+                            // SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
-                               if(tripController.isLoading){
-                                return CircularProgressIndicator();
-                               }else{
-                                return  StreamBuilder<Map<String, dynamic>?>(
-                              stream:
-                                  FlutterBackgroundService().on('trip'),
-                              builder:   (context, snapshot) {
-                                String timer_status='';
-                                if (snapshot.data == null) {
-                                    timer_status = tripController.tripStatus;
-                                } else {
-                                  timer_status =
-                                      snapshot.data?["tripStatus"] ?? "stoped";
-                                     
-                                }
-                                if (timer_status != "started") {
-                                  return OutlinedButton(
-                                      style: ButtonStyle(
-                                        backgroundColor: MaterialStateProperty
-                                            .all<Color>(Colors
-                                                .green), // Set the background color
-                                        foregroundColor: MaterialStateProperty
-                                            .all<Color>(Colors
-                                                .white), // Set the text color
-                                      ),
-                                      onPressed: () {
-                                        showStartTripDialog(context)
-                                            .then((value) async {
-                                          if (value != null && value) {
-                                            // User clicked 'Yes', perform the desired action
-                                            // Add your code here
-                                            final service =
-                                                FlutterBackgroundService();
-                                            var isRunning =
-                                                await service.isRunning();
+                            if (tripController.isLoading) {
+                              return CircularProgressIndicator();
+                            } else {
+                              return StreamBuilder<Map<String, dynamic>?>(
+                                  stream: FlutterBackgroundService().on('trip'),
+                                  builder: (context, snapshot) {
+                                    String timer_status = '';
+                                    if (snapshot.data == null) {
+                                      timer_status = tripController.tripStatus;
+                                    } else {
+                                      timer_status =
+                                          snapshot.data?["tripStatus"] ??
+                                              "stoped";
+                                    }
+                                    if (timer_status != "started") {
+                                      return OutlinedButton(
+                                          style: ButtonStyle(
+                                            backgroundColor: MaterialStateProperty
+                                                .all<Color>(Colors
+                                                    .green), // Set the background color
+                                            foregroundColor: MaterialStateProperty
+                                                .all<Color>(Colors
+                                                    .white), // Set the text color
+                                          ),
+                                          onPressed: () {
+                                            showStartTripDialog(context)
+                                                .then((value) async {
+                                              if (value != null && value) {
+                                                // User clicked 'Yes', perform the desired action
+                                                // Add your code here
+                                                final service =
+                                                    FlutterBackgroundService();
+                                                var isRunning =
+                                                    await service.isRunning();
                                                 print('trip create confirmed');
-                                           tripController.startTrip();
-                                            // setState(() {});
-                                            // Get.snackbar('Trip Started', 'Wish you good ride');
-                                           
-                                          } else {
-                                            // User clicked 'No' or pressed outside the dialog
-                                            // Add your code here
-                                          }
-                                        });
-                                      },
-                                      child: Text("Start New"));
-                                } else {
-                                  return OutlinedButton(
-                                      style: ButtonStyle(
-                                        backgroundColor: MaterialStateProperty
-                                            .all<Color>(Colors
-                                                .red), // Set the background color
-                                        foregroundColor: MaterialStateProperty
-                                            .all<Color>(Colors
-                                                .white), // Set the text color
-                                      ),
-                                      onPressed: () {
-                                        showStopDialog(context)
-                                            .then((value) async {
-                                          if (value != null && value) {
-                                            // User clicked 'Yes', perform the desired action
-                                            // Add your code here
-                                            // final service =
-                                            //     FlutterBackgroundService();
-                                            // var isRunning =
-                                            //     await service.isRunning();
-                                            tripController.stopTrip(price,distance,time);
+                                                tripController.startTrip();
+                                                // setState(() {});
+                                                // Get.snackbar('Trip Started', 'Wish you good ride');
+                                              } else {
+                                                // User clicked 'No' or pressed outside the dialog
+                                                // Add your code here
+                                              }
+                                            });
+                                          },
+                                          child: Text("Start New"));
+                                    } else {
+                                      return OutlinedButton(
+                                          style: ButtonStyle(
+                                            backgroundColor: MaterialStateProperty
+                                                .all<Color>(Colors
+                                                    .red), // Set the background color
+                                            foregroundColor: MaterialStateProperty
+                                                .all<Color>(Colors
+                                                    .white), // Set the text color
+                                          ),
+                                          onPressed: () {
+                                            showStopDialog(context)
+                                                .then((value) async {
+                                              if (value != null && value) {
+                                                // User clicked 'Yes', perform the desired action
+                                                // Add your code here
+                                                // final service =
+                                                //     FlutterBackgroundService();
+                                                // var isRunning =
+                                                //     await service.isRunning();
+                                                tripController.stopTrip(
+                                                    price, distance, time);
 
-                                          // setState(() {});
-                                          } else {
-                                            // User clicked 'No' or pressed outside the dialog
-                                            // Add your code here
-                                          }
-                                        });
-                                      },
-                                      child: Text("Stop"));
-                                }
-                              });
-                         
-                               }
-                         }),
-                         
+                                                // setState(() {});
+                                              } else {
+                                                // User clicked 'No' or pressed outside the dialog
+                                                // Add your code here
+                                              }
+                                            });
+                                          },
+                                          child: Text("Stop"));
+                                    }
+                                  });
+                            }
+                          }),
                           Text(
                             "$price Birr",
                             style: TextStyle(
@@ -531,7 +537,6 @@ class _DashboardV2State extends State<DashboardV2> {
               ],
             ),
           ),
-         
           actions: [
             OutlinedButton(
               child: Text('Close'),
@@ -545,65 +550,65 @@ class _DashboardV2State extends State<DashboardV2> {
       },
     );
   }
-void showDiaalog( num? price, num? distance, String? time){
-   Get.defaultDialog(
-    title: "Vip taxi trip report",
-    content:  SingleChildScrollView(
-            child: Column(
+
+  void showDiaalog(num? price, num? distance, String? time) {
+    Get.defaultDialog(
+      title: "Vip taxi trip report",
+      content: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Text(
+            //   "Trip Report ",
+            //   style: TextStyle(color: Colors.black, fontSize: 20),
+            // ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Text(
-                //   "Trip Report ",
-                //   style: TextStyle(color: Colors.black, fontSize: 20),
-                // ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Total Price: ",
-                      style: TextStyle(color: Colors.green, fontSize: 20),
-                    ),
-                    Text("$price Birr",
-                        style: TextStyle(color: Colors.green, fontSize: 20))
-                  ],
+                Text(
+                  "Total Price: ",
+                  style: TextStyle(color: Colors.green, fontSize: 20),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Distance: ",
-                        style: TextStyle(color: Colors.green, fontSize: 20)),
-                    Text("${distance?.toStringAsFixed(2) ?? ''}Km",
-                        style: TextStyle(color: Colors.green, fontSize: 20))
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Waiting time: ",
-                        style: TextStyle(color: Colors.green, fontSize: 20)),
-                    Text("$time ",
-                        style: TextStyle(color: Colors.green, fontSize: 20))
-                  ],
-                ),
+                Text("$price Birr",
+                    style: TextStyle(color: Colors.green, fontSize: 20))
               ],
             ),
-          ),
-         
-    actions: [
-      TextButton(
-        onPressed: () => Get.back(),
-        child: Text("Cancel"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Distance: ",
+                    style: TextStyle(color: Colors.green, fontSize: 20)),
+                Text("${distance?.toStringAsFixed(2) ?? ''}Km",
+                    style: TextStyle(color: Colors.green, fontSize: 20))
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Waiting time: ",
+                    style: TextStyle(color: Colors.green, fontSize: 20)),
+                Text("$time ",
+                    style: TextStyle(color: Colors.green, fontSize: 20))
+              ],
+            ),
+          ],
+        ),
       ),
-      TextButton(
-        onPressed: () {
-          // Perform action when the dialog button is pressed
-          Get.back();
-        },
-        child: Text("OK"),
-      ),
-    ],
-  );
-}
-  
+      actions: [
+        TextButton(
+          onPressed: () => Get.back(),
+          child: Text("Cancel"),
+        ),
+        TextButton(
+          onPressed: () {
+            // Perform action when the dialog button is pressed
+            Get.back();
+          },
+          child: Text("OK"),
+        ),
+      ],
+    );
+  }
+
   Future<dynamic> showStopDialog(BuildContext context) {
     return showDialog(
       context: context,

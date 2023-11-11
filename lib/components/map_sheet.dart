@@ -189,7 +189,7 @@ class _MapSheetState extends State<MapSheet> {
           ),
 
            Positioned(
-        bottom: 60,
+        bottom: MediaQuery.of(context).size.height * 0.5,
         left: 30,
         child: IconButton(
           onPressed: () async {

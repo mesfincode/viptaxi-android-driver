@@ -13,86 +13,52 @@ import 'package:get/route_manager.dart';
 import 'package:driver/screens/splash_screen.dart';
 import 'package:driver/services/background_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'controllers/network_controller.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  // Set the background messaging handler early on, as a named top-level function
+     await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-        FirebaseMessagingService().initialize();
 
-    await setupFlutterNotifications();
-  
+        FirebaseMessagingService().initialize();
 
   await initializeService();
   runApp(const MyApp());
 }
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-
-    return GetMaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
-        initialBinding: BindingsBuilder(() {
-          Get.lazyPut<NetworkController>(() => NetworkController());
-          Get.put(ProfileController());
-          Get.put(BackgroundServiceController());
-          // Get.put(PermissionController());
-        }),
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        home: SplashScreen());
-  }
-}
-
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await setupFlutterNotifications();
   showFlutterNotification(message);
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
+     if (message.data.isNotEmpty) {
+        // Access the data object
+        Map<String, dynamic> data = message.data;
+        // print(data['score']);
+                sharedPreferences.setString('tripReqestsId', data['tripReqestsId']);
+
+        // Process the data as needed
+        // For example, print the values
+        data.forEach((key, value) {
+          print('$key: $value');
+        });
+      }
   print('Handling a background message ${message.messageId}');
 }
-
 /// Create a [AndroidNotificationChannel] for heads up notifications
 late AndroidNotificationChannel channel;
 
 bool isFlutterLocalNotificationsInitialized = false;
-void showFlutterNotification(RemoteMessage message) {
-  RemoteNotification? notification = message.notification;
-  AndroidNotification? android = message.notification?.android;
-  if (notification != null && android != null) {
-    flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      notification.title,
-      notification.body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          channel.name,
-          channelDescription: channel.description,
-          // TODO add a proper drawable resource to android, for now using
-          //      one that already exists in example app.
-          icon: 'launch_background',
-        ),
-      ),
-    );
-  }
-}
 
-/// Initialize the [FlutterLocalNotificationsPlugin] package.
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 Future<void> setupFlutterNotifications() async {
   if (isFlutterLocalNotificationsInitialized) {
     return;
@@ -124,4 +90,54 @@ Future<void> setupFlutterNotifications() async {
     sound: true,
   );
   isFlutterLocalNotificationsInitialized = true;
+}
+
+void showFlutterNotification(RemoteMessage message) {
+  RemoteNotification? notification = message.notification;
+  AndroidNotification? android = message.notification?.android;
+  if (notification != null && android != null ) {
+    flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      notification.title,
+      notification.body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          channelDescription: channel.description,
+          // TODO add a proper drawable resource to android, for now using
+          //      one that already exists in example app.
+          icon: 'launch_background',
+        ),
+      ),
+    );
+  }
+}
+
+/// Initialize the [FlutterLocalNotificationsPlugin] package.
+late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+
+    return GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        initialBinding: BindingsBuilder(() {
+          Get.lazyPut<NetworkController>(() => NetworkController());
+          Get.put(ProfileController());
+          Get.put(BackgroundServiceController());
+          // Get.put(PermissionController());
+        }),
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: SplashScreen());
+  }
 }

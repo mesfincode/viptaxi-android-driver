@@ -55,6 +55,9 @@ dependencies:
   flutter_overlay_window: ^0.4.3
   firebase_messaging: ^14.7.3
   badges: ^3.1.2
+  window_manager: ^0.3.7
+  firebase_database: ^10.3.3
+ 
 
 dev_dependencies:
   flutter_test:

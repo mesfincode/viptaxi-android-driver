@@ -334,6 +334,30 @@ class RequestController extends GetxController {
     }
   }
 
+Future<dynamic > fetchNewTripRequest(String tripReqestsId) async {
+    // String userId = await storage.read(key: 'userId') ?? '';
+    String driverId = await storage.read(key: 'driverId') ?? '';
+print("driverId ${driverId}");
+ String sessionToken = await storage.read(key: 'sessionToken') ?? '';
+
+      Options authOptions = Options(
+        headers: {
+          'X-Parse-Application-Id': 'myAppId',
+          'X-Parse-REST-API-Key': 'yourRestApiKey',
+          'X-Parse-Session-Token': sessionToken
+        },
+      );
+    Response? response =await _dio.get('https://sfu.insat.gov.et/restapi/parse/classes/tripRequests/$tripReqestsId',options: authOptions ,data: {});
+   print(response);
+    if (response?.statusCode == 200) {
+      print("fetch new trip");
+      print(response);
+      return response.data;
+    } else {
+      return null;
+    }
+  }
+
   Future<Response<dynamic>?> makeRequest(
       String path, String method, dynamic data) async {
     Response response;
