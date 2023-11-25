@@ -30,13 +30,13 @@ class BackgroundServiceController extends GetxController
   int _price = 0;
   Geodesy _geodesy = Geodesy();
 
-  int dayInitialPrice = 200;
+  int dayInitialPrice = 150;
   int nightInitialPrice = 300;
 
   int dayPerMiniutePrice = 5;
   int nightPerMinutePrice = 8;
 
-  int dayKilloMeterPrice = 80;
+  int dayKilloMeterPrice = 60;
   int nightKilloMeterPrice = 120;
   final storage = new FlutterSecureStorage();
   String? tripStatus;
@@ -114,7 +114,7 @@ class BackgroundServiceController extends GetxController
       final now = DateTime.now();
       final isDay = isTimeBetween(
           now, TimeOfDay(hour: 7, minute: 0), TimeOfDay(hour: 19, minute: 0));
-      _timer1 = Timer.periodic(Duration(seconds: 1), (Timer timer) async {
+      _timer1 = Timer.periodic(Duration(seconds: 2), (Timer timer) async {
         print('timer---1 E: ${DateTime.now()}');
 
         int localSeconds = seconds;
@@ -154,6 +154,7 @@ class BackgroundServiceController extends GetxController
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
       await sharedPreferences.setString('tripStatus', 'started');
+
       service.invoke(
         'trip',
         {"tripStatus": "started"},

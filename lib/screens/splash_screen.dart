@@ -86,16 +86,28 @@ class _SplashScreenState extends State<SplashScreen> {
 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: Container(
           width: double.infinity,
           height: double.infinity,
           child: Center(    
-             child:   Image.asset(
-              'assets/images/logo_bg_white.jpg', // Replace with your image path
-              height: 200,
-              width: 200,
-            ),),
+             child:   Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 Image.asset(
+                  'assets/images/logo_bg_white.jpg', // Replace with your image path
+                  height: 200,
+                  width: 200,
+            ),
+            Text("Vip Taxi Ethiopia Driver App",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+           
+               ],
+             ),),
         ),
+       bottomSheet: Container(
+          height: 5,
+          margin: EdgeInsets.only(bottom: 10),
+          child: LinearProgressIndicator(color: Colors.red,)),
       ),
     );
   }

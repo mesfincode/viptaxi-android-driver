@@ -31,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String phoneNumb = '';
     RequestController authController = Get.put(RequestController());
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.only(top: 50, left: 20, right: 20),
         child: Container(
@@ -39,6 +40,11 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+                Image.asset(
+                'assets/images/logo_bg_white.jpg', // Replace with your image path
+                height: 100,
+                width: 100,
+              ),
               Text(
                 "Enter your phone to get started",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -123,20 +129,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     authController.sendVerificationCode(phoneNumb);
                   },
                   style: OutlinedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 247, 89, 80),
                     padding: EdgeInsets.all(12), // Adjust the padding as needed
+                    shadowColor: const Color.fromARGB(255, 19, 16, 16),
+                    elevation: 20,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                           8), // Adjust the border radius as needed
                     ),
                     side: BorderSide(
-                      // color: Color.fromARGB(255, 113, 185, 244), // Set the color of the button outline
+                      color: const Color.fromARGB(255, 240, 116,
+                          107), // Set the color of the button outline
                       width: 2.0, // Set the width of the button outline
                     ),
                   ),
 
-                  child: Text(
+                 child: Text(
                     'Send Code',
                     style: TextStyle(
+                      color: Colors.black,
                       fontSize: 16, // Set the font size of the button text
                       fontWeight: FontWeight
                           .bold, // Set the font weight of the button text

@@ -12,6 +12,11 @@ class ProfileController extends GetxController {
   String get phone => _phone.value;
   var _email = ''.obs;
   String get email => _email.value;
+
+  var _profilePic = ''.obs;
+  String get profilePic => _profilePic.value;
+  set profilePic(String value) => _profilePic.value = value;
+
   @override
   void onInit() {
     super.onInit();
@@ -23,6 +28,8 @@ class ProfileController extends GetxController {
       _phone.value = await storage.read(key: 'phone') ?? '';
       _email.value = await storage.read(key: 'email') ?? '';
       _firstName.value = await storage.read(key: 'firstName') ?? '';
+      _profilePic.value = await storage.read(key: 'profilePic') ?? '';
+      print(_profilePic);
     } catch (e) {
       print(e);
     }

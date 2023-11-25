@@ -5,7 +5,7 @@ class TripRequestDetail {
   String riderDestinatinoAddress;
   String pickUpTime;
   String status;
-
+  String dateSent;
   TripRequestDetail({
     required this.riderName,
     required this.riderPhone,
@@ -13,6 +13,7 @@ class TripRequestDetail {
     required this.riderDestinatinoAddress,
     required this.pickUpTime,
     required this.status,
+    required this.dateSent,
 
   });
 }

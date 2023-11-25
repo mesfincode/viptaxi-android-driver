@@ -27,6 +27,7 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
         FirebaseMessagingService().initialize();
+  WakelockPlus.enable();
 
   await initializeService();
   runApp(const MyApp());
@@ -126,6 +127,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return GetMaterialApp(
+      
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         initialBinding: BindingsBuilder(() {
@@ -135,7 +137,7 @@ class MyApp extends StatelessWidget {
           // Get.put(PermissionController());
         }),
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
           useMaterial3: true,
         ),
         home: SplashScreen());

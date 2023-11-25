@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:driver/controllers/profile_controller.dart';
 import 'package:driver/controllers/request_controller.dart';
 import 'package:driver/screens/login_screen.dart';
@@ -20,7 +23,6 @@ class DrawerMenu extends StatefulWidget {
 }
 
 class _DrawerMenuState extends State<DrawerMenu> {
-
   @override
   Widget build(BuildContext context) {
     RequestController requestController = Get.find();
@@ -32,25 +34,40 @@ class _DrawerMenuState extends State<DrawerMenu> {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            // decoration: BoxDecoration(
-            //   color: Colors.white,
-            // ),
-            child:Obx((){
-             return  Text(
-              profileController.firstName,
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 24,
+              // decoration: BoxDecoration(
+              //   color: Colors.white,
+              // ),
+              child: Column(
+            children: [
+              CachedNetworkImage(
+                imageUrl:
+                    profileController.profilePic, // Replace with your image URL
+                imageBuilder: (context, imageProvider) => CircleAvatar(
+                  backgroundImage: imageProvider,
+                  radius: 50, // Adjust the radius according to your preference
+                ),
+                placeholder: (context, url) => CircularProgressIndicator(color: Colors.red,),
+                errorWidget: (context, url, error) => Icon(Icons.error),
               ),
-            );
-            })
-          ),
+              Obx(() {
+                return Text(
+                  profileController.firstName,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 24,
+                  ),
+                );
+              }),
+            ],
+          )),
           ListTile(
-            title:Obx(() {
-              if(requestController.isLoading){
-                return Center(child: CircularProgressIndicator(),);
-              }else{
-                return  Text('LogOut');
+            title: Obx(() {
+              if (requestController.isLoading) {
+                return Center(
+                  child: CircularProgressIndicator(color: Colors.red,),
+                );
+              } else {
+                return Text('LogOut');
               }
             }),
             onTap: () async {
@@ -58,11 +75,10 @@ class _DrawerMenuState extends State<DrawerMenu> {
               // SharedPreferences preferences =
               //     await SharedPreferences.getInstance();
               // preferences.remove('driverName');
-                requestController.logout();
+              requestController.logout();
               // Get.to(LoginScreen());
             },
           ),
-        
         ],
       ),
     );

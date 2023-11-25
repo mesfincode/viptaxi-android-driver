@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:driver/constants.dart';
 import 'package:driver/constants/headers.dart';
 import 'package:driver/controllers/profile_controller.dart';
 import 'package:driver/screens/home_screen2.dart';
 import 'package:driver/services/firebase_messaging.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -24,27 +26,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 class RequestController extends GetxController {
   final Dio _dio = Dio();
   String? baseUrl;
-  final production = true;
 
   var _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
   SecureStorageHelper storageHelper = new SecureStorageHelper();
   final storage = new FlutterSecureStorage();
   ProfileController profileController = Get.put(ProfileController());
+
+    DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
+
   @override
   void onInit() async {
     print("call onInit"); // this line not printing
     _dio.options.connectTimeout = Duration(seconds: 5); // 5 seconds
     _dio.options.receiveTimeout = Duration(seconds: 5); // 3 seconds
-    if (!production) {
+    if (!PRODUCTION) {
       (_dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate =
           (client) {
         client.badCertificateCallback = (cert, host, port) => true;
         return client;
       };
-      baseUrl = 'http://192.168.0.38:1337/parse';
+      baseUrl = DEV_BASE_URL;
     } else {
-      baseUrl = 'https://sfu.insat.gov.et/restapi/parse';
+      baseUrl = PROD_BASE_URL;
     }
 
     _dio.interceptors.add(
@@ -154,6 +158,8 @@ class RequestController extends GetxController {
           String firstName = response.data['result']['driver']['firstName'];
           String lastName = response.data['result']['driver']['firstName'];
           String email = response.data['result']['driver']['email'];
+                    String profile = response.data['result']['driver']['profilePic'];
+
           String driverId = response.data['result']['driver']['objectId'];
           updateDriver(driverId);
 
@@ -162,7 +168,10 @@ class RequestController extends GetxController {
           await storage.write(key: 'email', value: email);
           await storage.write(key: 'driverId', value: driverId);
 
-          profileController.firstName = firstName;
+            await storage.write(key: 'profilePic', value: profile);
+
+      profileController.firstName = firstName;
+      profileController.profilePic = profile;
           await storage.write(key: 'profileStatus', value: 'isCompleted');
 
           Get.offAll(() => HomeScreen2());
@@ -242,8 +251,8 @@ class RequestController extends GetxController {
       print("error:--$response");
     }
   }
-  Future<void> createDriver(
-      String firstName, String lastName, String email) async {
+  Future<bool> createDriver(
+      String firstName, String lastName, String email, String profile,String licenseImage) async {
     String userId = await storage.read(key: 'userId') ?? '';
     String phone = await storage.read(key: 'phone') ?? '';
   String? fcmToken= await FirebaseMessagingService().getDeviceToken();
@@ -253,6 +262,8 @@ class RequestController extends GetxController {
       'email': email,
       'phoneNumber': phone,
       'fcmTocken': fcmToken,
+      'profilePic': profile,
+      'licenseImage':licenseImage,
       'driverId': {
         "__type": "Pointer",
         "className": "_User",
@@ -271,17 +282,23 @@ class RequestController extends GetxController {
       await storage.write(key: 'lastName', value: lastName);
       await storage.write(key: 'email', value: email);
       await storage.write(key: 'driverId', value: driverId);
+      await storage.write(key: 'profilePic', value: profile);
+
       profileController.firstName = firstName;
+      profileController.profilePic = profile;
 
       await storage.write(key: 'profileStatus', value: 'isCompleted');
+      
+      return true;
 
-      Get.offAll(() => HomeScreen2());
     } else {
       print("error:--$response");
+            return false;
+
     }
   }
 
-  Future<bool> startTripRequest(dynamic startLocation) async {
+  Future<bool> startTripRequest(dynamic startLocation,String riderName,String riderPhone) async {
     String driverId = await storage.read(key: 'driverId') ?? '';
     print("make trip start request");
     dynamic data = {
@@ -290,6 +307,8 @@ class RequestController extends GetxController {
       'status': 'started',
       'totalFair': 0.0,
       'waitingTime': '00:00:00',
+      'riderName':riderName,
+      'riderPhone':riderPhone,
       'driver': {
         "__type": "Pointer",
         "className": "drivers",
@@ -342,8 +361,8 @@ print("driverId ${driverId}");
 
       Options authOptions = Options(
         headers: {
-          'X-Parse-Application-Id': 'myAppId',
-          'X-Parse-REST-API-Key': 'yourRestApiKey',
+          'X-Parse-Application-Id': APP_NAME,
+          'X-Parse-REST-API-Key': APP_REST_API_KEY,
           'X-Parse-Session-Token': sessionToken
         },
       );
@@ -367,8 +386,8 @@ print("driverId ${driverId}");
 
       Options authOptions = Options(
         headers: {
-          'X-Parse-Application-Id': 'myAppId',
-          'X-Parse-REST-API-Key': 'yourRestApiKey',
+          'X-Parse-Application-Id': APP_NAME,
+          'X-Parse-REST-API-Key': APP_REST_API_KEY,
           'X-Parse-Session-Token': sessionToken
         },
       );
@@ -424,4 +443,5 @@ print("driverId ${driverId}");
     }
     return null;
   }
+
 }

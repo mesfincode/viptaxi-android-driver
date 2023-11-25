@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:driver/components/bottom_sheet_comp.dart';
+import 'package:driver/components/bottom_sheet_compV2.dart';
 import 'package:driver/components/connection_indicator.dart';
 import 'package:driver/components/drawer_menu.dart';
 import 'package:driver/components/hamberger_menu.dart';
@@ -82,25 +83,25 @@ class _HomeScreen2State extends State<HomeScreen2> {
             MapSheet(),
             HambergerMenu(),
             DashboardV2(),
-            Positioned(
-              top: 35,
-              right: 16,
-              child: badges.Badge(
-                position: badges.BadgePosition.topEnd(top: 0, end: -2),
-                showBadge: false,
-                ignorePointer: false,
-                onTap: () {},
-                badgeContent: Text('3'),
-                child: IconButton(
-                  iconSize: 35,
-                  color: Colors.blue,
-                  icon: Icon(Icons.notifications),
-                  onPressed: () {
-                    // Handle button press
-                  },
-                ),
-              ),
-            ),
+            // Positioned(
+            //   top: 35,
+            //   right: 16,
+            //   child: badges.Badge(
+            //     position: badges.BadgePosition.topEnd(top: 0, end: -2),
+            //     showBadge: false,
+            //     ignorePointer: false,
+            //     onTap: () {},
+            //     badgeContent: Text('3'),
+            //     child: IconButton(
+            //       iconSize: 35,
+            //       color: Colors.blue,
+            //       icon: Icon(Icons.notifications),
+            //       onPressed: () {
+            //         // Handle button press
+            //       },
+            //     ),
+            //   ),
+            // ),
             // TripRequest()
             // RecenterButton(
             //     controller: _controller,
@@ -198,7 +199,7 @@ class _HomeScreen2State extends State<HomeScreen2> {
           ]),
         ),
       ),
-      bottomSheet: BottomSheetComponent(),
+      bottomSheet: BottomSheetComponentV2(),
       // floatingActionButton: FloatingActionButton.extended(
       //   onPressed: _goToTheLake,
       //   label: const Text('To the lake!'),
@@ -301,8 +302,7 @@ class _DashboardV2State extends State<DashboardV2> {
           margin: EdgeInsets.only(left: 16, right: 16),
           padding: EdgeInsets.only(left: 10, right: 10, top: 8),
           decoration: BoxDecoration(
-            color: Color.fromARGB(
-                255, 238, 235, 235), // Set the desired background color
+            color: const Color.fromARGB(255, 255, 255, 255), // Set the desired background color
             borderRadius: BorderRadius.circular(8.0),
             boxShadow: [
               BoxShadow(
@@ -347,36 +347,7 @@ class _DashboardV2State extends State<DashboardV2> {
                                               "stoped";
                                     }
                                     if (timer_status != "started") {
-                                      return OutlinedButton(
-                                          style: ButtonStyle(
-                                            backgroundColor: MaterialStateProperty
-                                                .all<Color>(Colors
-                                                    .green), // Set the background color
-                                            foregroundColor: MaterialStateProperty
-                                                .all<Color>(Colors
-                                                    .white), // Set the text color
-                                          ),
-                                          onPressed: () {
-                                            showStartTripDialog(context)
-                                                .then((value) async {
-                                              if (value != null && value) {
-                                                // User clicked 'Yes', perform the desired action
-                                                // Add your code here
-                                                final service =
-                                                    FlutterBackgroundService();
-                                                var isRunning =
-                                                    await service.isRunning();
-                                                print('trip create confirmed');
-                                                tripController.startTrip();
-                                                // setState(() {});
-                                                // Get.snackbar('Trip Started', 'Wish you good ride');
-                                              } else {
-                                                // User clicked 'No' or pressed outside the dialog
-                                                // Add your code here
-                                              }
-                                            });
-                                          },
-                                          child: Text("Start New"));
+                                     return Container();
                                     } else {
                                       return OutlinedButton(
                                           style: ButtonStyle(
@@ -397,7 +368,7 @@ class _DashboardV2State extends State<DashboardV2> {
                                                 //     FlutterBackgroundService();
                                                 // var isRunning =
                                                 //     await service.isRunning();
-                                                tripController.stopTrip(
+                                                tripController.stopTrip(context,
                                                     price, distance, time);
 
                                                 // setState(() {});

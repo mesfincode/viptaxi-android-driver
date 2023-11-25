@@ -62,27 +62,27 @@ class FirebaseMessagingService {
           message.notification?.title ?? message.data['title'];
       final String? body = message.notification?.body ?? message.data['body'];
       final Map<String, dynamic> data = message.data;
-      _showNotificationDetails(title, body, data);
+      // _showNotificationDetails(title, body, data);
     });
-    final RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null) {
-      final String? title =
-          initialMessage.notification?.title ?? initialMessage.data['title'];
-      final String? body =
-          initialMessage.notification?.body ?? initialMessage.data['body'];
-      final Map<String, dynamic> data = initialMessage.data;
-      _showNotificationDetails(title, body, data);
-    }
+    // final RemoteMessage? initialMessage =
+    //     await FirebaseMessaging.instance.getInitialMessage();
+    // if (initialMessage != null) {
+    //   final String? title =
+    //       initialMessage.notification?.title ?? initialMessage.data['title'];
+    //   final String? body =
+    //       initialMessage.notification?.body ?? initialMessage.data['body'];
+    //   final Map<String, dynamic> data = initialMessage.data;
+    //   // _showNotificationDetails(title, body, data);
+    // }
   }
 
   Future<String?> getDeviceToken() {
     return _firebaseMessaging.getToken();
   }
 
-  void _showNotificationDetails(
-      String? title, String? body, Map<String, dynamic> data) {
-    // Navigate to a new screen or dialog to display the notification details
-    Get.to(NotificationDetailsScreen(title, body, data));
-  }
+  // void _showNotificationDetails(
+  //     String? title, String? body, Map<String, dynamic> data) {
+  //   // Navigate to a new screen or dialog to display the notification details
+  //   Get.to(NotificationDetailsScreen(title, body, data));
+  // }
 }
