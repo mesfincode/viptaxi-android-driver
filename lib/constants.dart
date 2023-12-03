@@ -9,7 +9,8 @@ const APP_REST_API_KEY = 'yourRestApiKey';
 const HEADER_APPLICATION_ID = 'X-Parse-Application-Id';
 const HEADER_REST_API_KEY = 'X-Parse-REST-API-Key';
 
-const DEV_BASE_URL = 'https://dashboard.viptaxi.et/dev-api';
-const PROD_BASE_URL ='https://dashboard.viptaxi.et/prod-api';
+// const DEV_BASE_URL = 'https://dashboard.viptaxi.et/dev-api';
+const DEV_BASE_URL = 'https://sfu.insat.gov.et/devapi/api';
+const PROD_BASE_URL ='https://sfu.insat.gov.et/restapi/api';
 
 const PRODUCTION = false;

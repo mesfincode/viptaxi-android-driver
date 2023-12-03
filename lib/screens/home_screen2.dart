@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:driver/components/bottom_sheet_comp.dart';
 import 'package:driver/components/bottom_sheet_compV2.dart';
 import 'package:driver/components/connection_indicator.dart';
@@ -7,6 +8,7 @@ import 'package:driver/components/drawer_menu.dart';
 import 'package:driver/components/hamberger_menu.dart';
 import 'package:driver/components/map_sheet.dart';
 import 'package:driver/components/trip_request.dart';
+import 'package:driver/controllers/network_controller.dart';
 import 'package:driver/controllers/permission_controller.dart';
 import 'package:driver/controllers/position_controller.dart';
 import 'package:driver/controllers/trip_controller.dart';
@@ -22,6 +24,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:http/http.dart' as http;
 
 class HomeScreen2 extends StatefulWidget {
   const HomeScreen2({super.key});
@@ -33,11 +36,15 @@ class HomeScreen2 extends StatefulWidget {
 class _HomeScreen2State extends State<HomeScreen2> {
   String driverName = 'Mesfin';
   String tripStatus = '';
+  ConnectivityResult _connectivityResult = ConnectivityResult.none;
+  bool _isNetworkUsable = true;
   @override
   void initState() {
     // TODO: implement initState
     initialize();
     getTripStatus();
+
+
 //     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
 //   print('Got a message whilst in the foreground!');
 //   print('Message data: ${message.data}');
@@ -48,6 +55,8 @@ class _HomeScreen2State extends State<HomeScreen2> {
 // });
     super.initState();
   }
+
+
 
   void initialize() async {
     await Permission.notification.isDenied.then(
@@ -73,6 +82,7 @@ class _HomeScreen2State extends State<HomeScreen2> {
     final drawerWidth = screenWidth * 0.60;
     // PositionController positionController = Get.put(PositionController());
     PermissionController permissionController = Get.put(PermissionController());
+    NetworkController networkController = Get.find();
     return Scaffold(
       drawer: DrawerMenu(drawerWidth: drawerWidth, driverName: driverName),
       body: Container(
@@ -80,7 +90,37 @@ class _HomeScreen2State extends State<HomeScreen2> {
         width: double.infinity,
         child: Center(
           child: Stack(children: [
+           
             MapSheet(),
+            Obx((){
+              if(!networkController.isNetworkUsable){
+                return  Positioned(
+                top: 30,
+                left:0,
+                right: 0,
+                child: Container(
+                  // width: double.infinity,
+                  padding: EdgeInsets.all(3),
+                decoration: BoxDecoration(color: Colors.red),
+           
+                  // padding: EdgeInsets.all(5),
+                  child: Center(
+                  child :
+                      Text(
+                        "Network unavailable",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      // OutlinedButton(onPressed: (){
+                      //  networkController.hasUsableNetwork();
+                      // }, child: Text("Retry"))
+                    
+                  ),
+                ));
+              }else{
+                return Text("");
+              }
+            })
+             ,
             HambergerMenu(),
             DashboardV2(),
             // Positioned(
@@ -266,9 +306,9 @@ class DashboardV2 extends StatefulWidget {
 
 class _DashboardV2State extends State<DashboardV2> {
   bool started = false;
-    DatabaseReference ref = FirebaseDatabase.instance.ref('drivers');
+  DatabaseReference ref = FirebaseDatabase.instance.ref('drivers');
   final storage = new FlutterSecureStorage();
-  
+
   Future<bool> getTimerStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool("started") ?? false;
@@ -292,7 +332,6 @@ class _DashboardV2State extends State<DashboardV2> {
     BuildContext context,
   ) {
     TripController tripController = Get.put(TripController());
-  
 
     return Positioned(
         top: 90,
@@ -302,7 +341,8 @@ class _DashboardV2State extends State<DashboardV2> {
           margin: EdgeInsets.only(left: 16, right: 16),
           padding: EdgeInsets.only(left: 10, right: 10, top: 8),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 255, 255, 255), // Set the desired background color
+            color: const Color.fromARGB(
+                255, 255, 255, 255), // Set the desired background color
             borderRadius: BorderRadius.circular(8.0),
             boxShadow: [
               BoxShadow(
@@ -347,7 +387,7 @@ class _DashboardV2State extends State<DashboardV2> {
                                               "stoped";
                                     }
                                     if (timer_status != "started") {
-                                     return Container();
+                                      return Container();
                                     } else {
                                       return OutlinedButton(
                                           style: ButtonStyle(

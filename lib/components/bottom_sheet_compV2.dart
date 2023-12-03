@@ -1,6 +1,8 @@
 import 'dart:ffi';
+import 'dart:math';
 
 import 'package:driver/components/blinking_text.dart';
+import 'package:driver/controllers/profile_controller.dart';
 import 'package:driver/controllers/trip_controller.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -23,18 +25,31 @@ class BottomSheetComponentV2 extends StatefulWidget {
 }
 
 class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController _riderNameController = TextEditingController();
+  TextEditingController _riderPhoneController = TextEditingController();
+  TextEditingController _pickupAddressController = TextEditingController();
+  TextEditingController _destinationAddressController = TextEditingController();
+  TextEditingController _pickupTimeController = TextEditingController();
+
   DatabaseReference ref = FirebaseDatabase.instance.ref('drivers');
   DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
   final storage = new FlutterSecureStorage();
+  ProfileController profileController = Get.find();
 
   RequestController requestController = Get.find();
   String tripReqestsId = '';
   TripRequestDetail? tripRequestDetail;
   TripController tripController = Get.find();
+
+  bool _creatingNewOrder = false;
   @override
   void initState() {
     // TODO: implement initState
     getNewRequest();
+    _pickupTimeController.text = "Now";
+
+    _riderPhoneController.text="09";
     super.initState();
   }
 
@@ -79,7 +94,12 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                   status: "",
                   dateSent: formattedDate);
             }
+                      print("data null ------------");
+
           });
+
+        }else{
+          print("data null ------------");
         }
 
         // print(data);
@@ -93,8 +113,75 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
   @override
   void dispose() {
     // TODO: implement dispose
-  
+
     super.dispose();
+  }
+
+ void createRequest() async {
+    setState(() {
+      _creatingNewOrder = true;
+    });
+    String driverId = await storage.read(key: 'driverId') ?? '';
+    try {
+      await driverRef.child('/${driverId}/tripRequest/requestDetail').update({
+        "tripReqestsId": '1111111',
+        "driverId": driverId,
+        "driverName": "${profileController.firstName}",
+        "riderName": _riderNameController.text,
+        "riderPhone": _riderPhoneController.text,
+        "pickUpAddress": _pickupAddressController.text,
+        "destination": _destinationAddressController.text,
+        "pickUpTime": _pickupTimeController.text,
+        "sentBy": "${profileController.firstName}",
+        "dateSent": DateTime.now().millisecondsSinceEpoch
+      });
+      await driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+        "status": "pending",
+      });
+         setState(() {
+      _creatingNewOrder = false;
+    });
+    } catch (e) {
+      print(e);
+          setState(() {
+      _creatingNewOrder = false;
+    });
+    }
+
+    // driverRef.child('/${driverId}/tripRequest/requestDetail').update({
+    //   "tripReqestsId": '1111111',
+    //   "driverId": driverId,
+    //   "driverName": "${profileController.firstName}",
+    //   "riderName": _riderNameController.text,
+    //   "riderPhone": _riderPhoneController.text,
+    //   "riderPickUpAddress": _pickupAddressController.text,
+    //   "riderDestinatinoAddress": _destinationAddressController.text,
+    //   "pickUpTime": _pickupTimeController.text,
+    //   "sentBy":"${profileController.firstName}",
+    //   "dateSent": DateTime.now().millisecondsSinceEpoch
+    // }).then((_) {
+
+    //   driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+    //     "status": "pending",
+    //   }).then((_) {
+    //     // Data saved successfully!
+    //      setState(() {
+    //   _creatingNewOrder = false;
+    // });
+    //     print("update success");
+    //   }).catchError((error) {
+    //           _creatingNewOrder = false;
+
+    //     // The write failed...
+    //     print("update error");
+    //   });
+    //   print("update success");
+    // }).catchError((error) {
+    //         _creatingNewOrder = false;
+
+    //   // The write failed...
+    //   print("update error $error");
+    // });
   }
 
   void acceptRequest() async {
@@ -193,13 +280,132 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
       scheme: 'tel',
       path: phoneNumber,
     );
-    try{
+    try {
       await launchUrl(launchUri);
-
-    }catch(e){
+    } catch (e) {
       print("launch call err $e");
     }
     // await launchUrl(launchUri);
+  }
+
+  void _openDialog() {
+    _riderNameController.clear();
+    _pickupAddressController.clear();
+    _destinationAddressController.clear();
+  _pickupTimeController.text = "Now";
+
+    _riderPhoneController.text="09";
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Ride Details'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: _riderNameController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter the rider name';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Rider Name',
+                    ),
+                  ),
+                  TextFormField(
+                    controller: _riderPhoneController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter the rider phone number';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Rider Phone',
+                    ),
+                  ),
+                  TextFormField(
+                    controller: _pickupAddressController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter the pickup address';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Pickup Address',
+                    ),
+                  ),
+                  TextFormField(
+                    controller: _destinationAddressController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter the destination address';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Destination Address',
+                    ),
+                  ),
+                  TextFormField(
+                    controller: _pickupTimeController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter the pickup time';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Pickup Time',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+               OutlinedButton(
+                child: Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              OutlinedButton(
+                child: Text('Submit',style: TextStyle(color: Colors.green),),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // Form is valid, do something with the data
+                    String riderName = _riderNameController.text;
+                    String riderPhone = _riderPhoneController.text;
+                    String pickupAddress = _pickupAddressController.text;
+                    String destinationAddress =
+                        _destinationAddressController.text;
+                    String pickupTime = _pickupTimeController.text;
+                    createRequest();
+                    Navigator.of(context).pop();
+                    // Close the dialog
+
+                    // Perform any further actions with the captured data
+                    // ...
+                  }
+                },
+              ),
+          ],)
+            
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -234,46 +440,50 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                     ),
 
                     // Image.asset('assets/images/car11.png'),
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundImage:
-                              AssetImage('assets/images/default_profile.jpeg'),
-                          radius: 25,
-                        ),
-                        SizedBox(
-                          width: 20,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${tripRequestDetail?.riderName}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Text(
-                              '${tripRequestDetail?.riderPhone}',
-                              style: TextStyle(fontSize: 16),
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          width: 20,
-                        ),
-                        Column(
-                          children: [
-                            IconButton(
-                              iconSize: 30,
-                              color: Colors.blue,
-                              onPressed: () {
-                                _makePhoneCall("0943766122"); // Replace with the desired phone number
-                              },
-                              icon: Icon(Icons.call),
-                            ),
-                          ],
-                        )
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: AssetImage(
+                                'assets/images/default_profile.jpeg'),
+                            radius: 25,
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${tripRequestDetail?.riderName}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              Text(
+                                '${tripRequestDetail?.riderPhone}',
+                                style: TextStyle(fontSize: 16),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Column(
+                            children: [
+                              IconButton(
+                                iconSize: 30,
+                                color: Colors.blue,
+                                onPressed: () {
+                                  _makePhoneCall(
+                                      "0943766122"); // Replace with the desired phone number
+                                },
+                                icon: Icon(Icons.call),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                     // Divider(),
                     SizedBox(
@@ -390,25 +600,32 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          
+                          ElevatedButton(
+                            onPressed: () {
+                              try{
+  showYesOrNoDialog(context,
+                                      "Are you sure you want to reject the trip ?")
+                                  .then((value) => {
+                                        if(value !=null){
+                                          if (value) {rejectTripRequest()}
+                                        }
+                                      });
+                              }catch(e){
+
+                              }
+                            
+                            },
+                            child: Text('Reject'),
+                          ),
                           ElevatedButton(
                             onPressed: () {
                               acceptRequest();
-                           
                             },
                             child: Text(
                               'Accept',
                               style: TextStyle(color: Colors.blue),
                             ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              showYesOrNoDialog(context,
-                                      "Are you sure you want to reject the trip ?")
-                                  .then((value) => {
-                                        if (value) {rejectTripRequest()}
-                                      });
-                            },
-                            child: Text('Reject'),
                           ),
                         ],
                       ),
@@ -417,14 +634,32 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                            ElevatedButton(
+                            onPressed: () {
+                             try{
+                                 showYesOrNoDialog(context,
+                                      "Are you sure you want to cancel the trip ?")
+                                  .then((value) => {
+                                        if(value !=null){
+                                          if (value) {cancelTrepRequest()}
+                                        }
+                                      });
+                             }catch(e){
+
+                             }
+                            },
+                            child: Text('Cancle Trip'),
+                          ),
                           ElevatedButton(
                             onPressed: () async {
                               setState(() {
                                 _isStartTripButtonDisabled = true;
                               });
-                              showYesOrNoDialog(context, "Confirm Start Trip")
+                             try{
+ showYesOrNoDialog(context, "Confirm Start Trip")
                                   .then((value) => {
-                                        if (value)
+                                        if(value !=null){
+                                          if (value)
                                           {
                                             tripController
                                                 .startTrip(
@@ -439,23 +674,18 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                                                       })
                                                     })
                                           }
+                                        }
                                       });
+                             }catch(e){
+
+                             }
                             },
                             child: Text(
                               'Start Trip',
                               style: TextStyle(color: Colors.blue),
                             ),
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              showYesOrNoDialog(context,
-                                      "Are you sure you want to cancel the trip ?")
-                                  .then((value) => {
-                                        if (value) {cancelTrepRequest()}
-                                      });
-                            },
-                            child: Text('Cancle Trip'),
-                          ),
+                        
                         ],
                       ),
                     if (tripRequestDetail?.status == "started")
@@ -480,18 +710,45 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                       Container(
                         width: double.infinity,
                         // height: double.infinity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              'Waiting for new order from call center',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.blue),
-                            ),
-                            // ElevatedButton(
-                            //   onPressed: () {},
-                            //   child: Text('Cancle Trip'),
+                            // Text(
+                            //   'Waiting for new order from call center',
+                            //   style:
+                            //       TextStyle(fontSize: 16, color: Colors.blue),
                             // ),
+                            Container(
+                              width: double.infinity,
+                              child: _creatingNewOrder?Center(child: CircularProgressIndicator()):ElevatedButton(
+                                onPressed: () {
+                                  // Get.to(CarsScreen());
+
+                                  _openDialog();
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  backgroundColor:
+                                      Color.fromARGB(255, 244, 90, 82),
+                                  padding: EdgeInsets.all(
+                                      12), // Adjust the padding as needed
+                                  shadowColor:
+                                      Color.fromARGB(255, 222, 217, 217),
+                                  elevation: 20,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        8), // Adjust the border radius as needed
+                                  ),
+                                  // side: BorderSide(
+                                  //   color: Color.fromARGB(255, 254, 17, 0), // Set the color of the button outline
+                                  //   width: 2.0, // Set the width of the button outline
+                                  // ),
+                                ),
+                                child: Text(
+                                  "Create New Order",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            )
                           ],
                         ),
                       ),
@@ -519,7 +776,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                           height: 20,
                         ),
                         Text(
-                          "Waiting for Trip request from call center",
+                          "Loading Trip Detail",
                           style: TextStyle(fontSize: 16, color: Colors.blue),
                         ),
                         SizedBox(

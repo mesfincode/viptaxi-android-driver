@@ -128,12 +128,12 @@ BackgroundServiceController backgroundServiceController = Get.put(BackgroundServ
   });
   // bring to foreground
 
- service.on('start-timer2').listen((event) {
-    print("starting  timer 2");
-    // startTimer1(service);
-    backgroundServiceController.startTimer2(service);
-    // service.stopSelf();
-  });
+//  service.on('start-timer2').listen((event) {
+//     print("starting  timer 2");
+//     // startTimer1(service);
+//     backgroundServiceController.startTimer2(service);
+//     // service.stopSelf();
+//   });
 
     service.on('stop-timer2').listen((event) {
     print("stoping  timer 2");

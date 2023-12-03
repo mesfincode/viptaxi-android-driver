@@ -330,7 +330,7 @@ class RequestController extends GetxController {
     }
   }
 
-  Future<bool> stopTripRequest(String tripId, dynamic endLocation, int distance,
+  Future<bool> stopTripRequest(String tripId, dynamic endLocation, num distance,
       int price, String waitingTime) async {
     // String userId = await storage.read(key: 'userId') ?? '';
 

@@ -1,3 +1,4 @@
+import 'package:driver/controllers/network_controller.dart';
 import 'package:driver/screens/edit_profile_screen.dart';
 import 'package:driver/screens/home_screen2.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
         RequestController authController = Get.put(RequestController());
-
+        NetworkController networkController = Get.put(NetworkController());
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,

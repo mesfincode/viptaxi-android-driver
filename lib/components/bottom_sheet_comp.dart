@@ -199,7 +199,7 @@ driverRef
   @override
   Widget build(BuildContext context) {
     bool _isStartTripButtonDisabled = false;
-
+  
     return Container(
       height: 280,
       padding: EdgeInsets.all(20),
@@ -279,12 +279,7 @@ driverRef
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            acceptRequest();
-                          },
-                          child: Text('Accept'),
-                        ),
+                      
                         ElevatedButton(
                           onPressed: () {
                               showYesOrNoDialog(context, "Are you sure you want to reject the trip ?").then((value) => {
@@ -296,12 +291,29 @@ driverRef
                           },
                           child: Text('Reject'),
                         ),
+                          ElevatedButton(
+                          onPressed: () {
+                            acceptRequest();
+                          },
+                          child: Text('Accept'),
+                        ),
                       ],
                     ),
                   if (tripRequestDetail?.status == "accepted")
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                         ElevatedButton(
+                          onPressed: () {
+                            showYesOrNoDialog(context, "Are you sure you want to cancel the trip ?").then((value) => {
+                              if(value){
+                            cancelTrepRequest()
+
+                              }
+                            });
+                          },
+                          child: Text('Cancle Trip'),
+                        ),
                         ElevatedButton(
                           onPressed: () async {
                             setState(() {
@@ -323,17 +335,7 @@ driverRef
                           },
                           child: Text('Start Trip'),
                         ),
-                        ElevatedButton(
-                          onPressed: () {
-                            showYesOrNoDialog(context, "Are you sure you want to cancel the trip ?").then((value) => {
-                              if(value){
-                            cancelTrepRequest()
-
-                              }
-                            });
-                          },
-                          child: Text('Cancle Trip'),
-                        ),
+                       
                       ],
                     ),
                   if (tripRequestDetail?.status == "started")

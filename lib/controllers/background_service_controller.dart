@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:dart_geohash/dart_geohash.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:driver/controllers/profile_controller.dart';
+import 'package:driver/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -44,13 +47,18 @@ class BackgroundServiceController extends GetxController
   int seconds = 0, miniuts = 0, hours = 0;
   String digitSeconds = "00", digitMinutes = "00", digitHours = "00";
 
+
   @override
-  void onInit() {
+  void onInit()async {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
+       await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
     getTripStatus();
     _getCurrentPosition();
     startTrackingLocation();
+    startTimer2();
   }
 
   void getTripStatus() async {
@@ -94,7 +102,7 @@ class BackgroundServiceController extends GetxController
 
   void startTimer1(ServiceInstance service) async {
     _getCurrentPosition();
-      startTrackingLocation();
+    startTrackingLocation();
 
     DateTime _startTime;
     //  stopTimer1(service);
@@ -282,44 +290,74 @@ class BackgroundServiceController extends GetxController
 
       _price = 0;
     }
-       SharedPreferences sharedPreferences =
-          await SharedPreferences.getInstance();
-      await sharedPreferences.setString('tripStatus', 'stoped');
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    await sharedPreferences.setString('tripStatus', 'stoped');
     service.invoke(
       'trip',
       {"tripStatus": "stoped"},
     );
   }
 
-  void startTimer2(ServiceInstance service) {
+  void startTimer2() async {
+    String driverId = await storage.read(key: 'driverId') ?? '';
+DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
+
     const duration = Duration(
-        seconds:
+        minutes:
             1); // Set the duration of the timer (5 seconds in this example)
 
     if (_timer2 == null) {
       _timer2 = Timer.periodic(duration, (Timer timer) async {
         print('timer---2 E: ${DateTime.now()}');
+         print(driverId);
+        final hasPermission = await _handleLocationPermission();
 
-        // test using external plugin
-        final deviceInfo = DeviceInfoPlugin();
-        String? device;
-        if (Platform.isAndroid) {
-          final androidInfo = await deviceInfo.androidInfo;
-          device = androidInfo.model;
-        }
+        if (!hasPermission) return;
+        await Geolocator.getCurrentPosition(
+                desiredAccuracy: LocationAccuracy.bestForNavigation)
+            .then((Position position) {
+          // setState(() => {
+          GeoHasher geoHasher = GeoHasher();
+          String hash = geoHasher.encode(position.latitude,
+              position.longitude); // Returns a string geohash
+          print("geohash--------" + hash);
 
-        if (Platform.isIOS) {
-          final iosInfo = await deviceInfo.iosInfo;
-          device = iosInfo.model;
-        }
+          driverRef.child('/${driverId}/location').update({
+            "latitude": position.latitude,
+            "longitude": position.longitude,
+            "geohash": hash,
+            "updatedAt":DateTime.now().millisecondsSinceEpoch
+          }).then((_) {
+            // Data saved successfully!
 
-        service.invoke(
-          'update2',
-          {
-            "current_date2": DateTime.now().toIso8601String(),
-            "device2": device,
-          },
-        );
+            print("location sent to server");
+          }).catchError((error) {
+            // The write failed...
+            print("update error");
+          });
+        }).catchError((e) {
+          debugPrint(e);
+        });
+        // // test using external plugin
+        // final deviceInfo = DeviceInfoPlugin();
+        // String? device;
+        // if (Platform.isAndroid) {
+        //   final androidInfo = await deviceInfo.androidInfo;
+        //   device = androidInfo.model;
+        // }
+
+        // if (Platform.isIOS) {
+        //   final iosInfo = await deviceInfo.iosInfo;
+        //   device = iosInfo.model;
+        // }
+
+        // service.invoke(
+        //   'update2',
+        //   {
+        //     "current_date2": DateTime.now().toIso8601String(),
+        //     "device2": device,
+        //   },
+        // );
         // Do something when the timer expires
       });
     }

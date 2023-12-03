@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:driver/controllers/profile_controller.dart';
 import 'package:driver/controllers/request_controller.dart';
+import 'package:driver/screens/help_screen.dart';
 import 'package:driver/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -44,7 +45,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
                     profileController.profilePic, // Replace with your image URL
                 imageBuilder: (context, imageProvider) => CircleAvatar(
                   backgroundImage: imageProvider,
-                  radius: 50, // Adjust the radius according to your preference
+                  radius: 40, // Adjust the radius according to your preference
                 ),
                 placeholder: (context, url) => CircularProgressIndicator(color: Colors.red,),
                 errorWidget: (context, url, error) => Icon(Icons.error),
@@ -60,14 +61,31 @@ class _DrawerMenuState extends State<DrawerMenu> {
               }),
             ],
           )),
+         
           ListTile(
+            title: Row(
+              children: [
+                Icon(Icons.help_outline_outlined),
+                  SizedBox(width: 5,),
+                Text("Help"),
+              ],
+            ),
+            onTap: () {
+              Get.to(HelpScreen());
+            },
+          ),
+           ListTile(
             title: Obx(() {
               if (requestController.isLoading) {
                 return Center(
                   child: CircularProgressIndicator(color: Colors.red,),
                 );
               } else {
-                return Text('LogOut');
+                return Row(children: [
+                  Icon(Icons.logout_outlined),
+                  SizedBox(width: 5,),
+                  Text('LogOut')
+                ],);
               }
             }),
             onTap: () async {
@@ -79,6 +97,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
               // Get.to(LoginScreen());
             },
           ),
+         
         ],
       ),
     );

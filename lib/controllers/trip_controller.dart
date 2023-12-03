@@ -87,7 +87,7 @@ class TripController extends GetxController {
     bool tripStopedOnTheServer = await requestController.stopTripRequest(
         tripId,
         {'latitude': latitude, 'longitude': longitude, 'geohash': 'aksjff'},
-        distance.toInt(),
+        double.parse(distance.toStringAsFixed(1)),
         price.toInt(),
         time);
     if (tripStopedOnTheServer) {
@@ -285,7 +285,7 @@ void showDiaalog(num? price, num? distance, String? time) {
                     )
                   ],
                 ),
-                Text("${distance} Km",
+                Text("${double.parse(distance!.toStringAsFixed(1))} Km",
                     style: TextStyle(color: Colors.black, fontSize: 18))
               ],
             ),
