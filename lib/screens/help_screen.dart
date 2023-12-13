@@ -14,7 +14,7 @@ class _HelpScreenState extends State<HelpScreen> {
       appBar: AppBar(title: Text("Help"),),
       body: Container(
         padding: EdgeInsets.all(25),
-        child: Text("Vip Taxi Driver app V-1.0.3",style: TextStyle(fontSize: 16),)),
+        child: Text("Vip Taxi Driver app V-1.0.4",style: TextStyle(fontSize: 16),)),
     );
   }
 }

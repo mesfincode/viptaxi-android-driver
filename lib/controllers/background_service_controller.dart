@@ -47,14 +47,13 @@ class BackgroundServiceController extends GetxController
   int seconds = 0, miniuts = 0, hours = 0;
   String digitSeconds = "00", digitMinutes = "00", digitHours = "00";
 
-
   @override
-  void onInit()async {
+  void onInit() async {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-       await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     getTripStatus();
     _getCurrentPosition();
     startTrackingLocation();
@@ -105,6 +104,16 @@ class BackgroundServiceController extends GetxController
     startTrackingLocation();
 
     DateTime _startTime;
+    seconds = 0;
+    miniuts = 0;
+    hours = 0;
+    digitSeconds = "00";
+    digitHours = "00";
+    digitMinutes = "00";
+
+    _distance = 0.0;
+
+    _price = 0;
     //  stopTimer1(service);
     if (_timer1 == null) {
       seconds = 0;
@@ -166,6 +175,28 @@ class BackgroundServiceController extends GetxController
       service.invoke(
         'trip',
         {"tripStatus": "started"},
+      );
+    } else {
+      _timer1?.cancel(); // Cancel the timer if it's running
+      _timer1 = null; // Set the timer instance to null
+
+      seconds = 0;
+      miniuts = 0;
+      hours = 0;
+      digitSeconds = "00";
+      digitHours = "00";
+      digitMinutes = "00";
+
+      _distance = 0.0;
+
+      _price = 0;
+
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      await sharedPreferences.setString('tripStatus', 'stoped');
+      service.invoke(
+        'trip',
+        {"tripStatus": "stoped"},
       );
     }
   }
@@ -289,18 +320,30 @@ class BackgroundServiceController extends GetxController
       _distance = 0.0;
 
       _price = 0;
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      await sharedPreferences.setString('tripStatus', 'stoped');
+      service.invoke(
+        'trip',
+        {"tripStatus": "stoped"},
+      );
+    }else{
+       seconds = 0;
+      miniuts = 0;
+      hours = 0;
+      digitSeconds = "00";
+      digitHours = "00";
+      digitMinutes = "00";
+
+      _distance = 0.0;
+
+      _price = 0;
     }
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    await sharedPreferences.setString('tripStatus', 'stoped');
-    service.invoke(
-      'trip',
-      {"tripStatus": "stoped"},
-    );
   }
 
   void startTimer2() async {
     String driverId = await storage.read(key: 'driverId') ?? '';
-DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
+    DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
 
     const duration = Duration(
         minutes:
@@ -309,7 +352,7 @@ DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
     if (_timer2 == null) {
       _timer2 = Timer.periodic(duration, (Timer timer) async {
         print('timer---2 E: ${DateTime.now()}');
-         print(driverId);
+        print(driverId);
         final hasPermission = await _handleLocationPermission();
 
         if (!hasPermission) return;
@@ -326,7 +369,7 @@ DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
             "latitude": position.latitude,
             "longitude": position.longitude,
             "geohash": hash,
-            "updatedAt":DateTime.now().millisecondsSinceEpoch
+            "updatedAt": DateTime.now().millisecondsSinceEpoch
           }).then((_) {
             // Data saved successfully!
 
