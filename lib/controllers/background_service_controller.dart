@@ -114,7 +114,7 @@ class BackgroundServiceController extends GetxController
     _distance = 0.0;
 
     _price = 0;
-    //  stopTimer1(service);
+
     if (_timer1 == null) {
       seconds = 0;
       miniuts = 0;

@@ -298,7 +298,7 @@ class RequestController extends GetxController {
     }
   }
 
-  Future<bool> startTripRequest(dynamic startLocation,String riderName,String riderPhone) async {
+  Future<bool> startTripRequest(dynamic startLocation,String riderName,String riderPhone,String pickUpAddress,String destinationAddress) async {
     String driverId = await storage.read(key: 'driverId') ?? '';
     print("make trip start request");
     dynamic data = {
@@ -309,6 +309,9 @@ class RequestController extends GetxController {
       'waitingTime': '00:00:00',
       'riderName':riderName,
       'riderPhone':riderPhone,
+      'pickUpAddress':pickUpAddress,
+      'destinationAddress':destinationAddress,
+
       'driver': {
         "__type": "Pointer",
         "className": "drivers",
@@ -353,29 +356,29 @@ class RequestController extends GetxController {
     }
   }
 
-Future<dynamic > fetchNewTripRequest(String tripReqestsId) async {
-    // String userId = await storage.read(key: 'userId') ?? '';
-    String driverId = await storage.read(key: 'driverId') ?? '';
-print("driverId ${driverId}");
- String sessionToken = await storage.read(key: 'sessionToken') ?? '';
+// Future<dynamic > fetchNewTripRequest(String tripReqestsId) async {
+//     // String userId = await storage.read(key: 'userId') ?? '';
+//     String driverId = await storage.read(key: 'driverId') ?? '';
+// print("driverId ${driverId}");
+//  String sessionToken = await storage.read(key: 'sessionToken') ?? '';
 
-      Options authOptions = Options(
-        headers: {
-          'X-Parse-Application-Id': APP_NAME,
-          'X-Parse-REST-API-Key': APP_REST_API_KEY,
-          'X-Parse-Session-Token': sessionToken
-        },
-      );
-    Response? response =await _dio.get('https://sfu.insat.gov.et/restapi/parse/classes/tripRequests/$tripReqestsId',options: authOptions ,data: {});
-   print(response);
-    if (response?.statusCode == 200) {
-      print("fetch new trip");
-      print(response);
-      return response.data;
-    } else {
-      return null;
-    }
-  }
+//       Options authOptions = Options(
+//         headers: {
+//           'X-Parse-Application-Id': APP_NAME,
+//           'X-Parse-REST-API-Key': APP_REST_API_KEY,
+//           'X-Parse-Session-Token': sessionToken
+//         },
+//       );
+//     Response? response =await _dio.get('https://sfu.insat.gov.et/restapi/parse/classes/tripRequests/$tripReqestsId',options: authOptions ,data: {});
+//    print(response);
+//     if (response?.statusCode == 200) {
+//       print("fetch new trip");
+//       print(response);
+//       return response.data;
+//     } else {
+//       return null;
+//     }
+//   }
 
   Future<Response<dynamic>?> makeRequest(
       String path, String method, dynamic data) async {

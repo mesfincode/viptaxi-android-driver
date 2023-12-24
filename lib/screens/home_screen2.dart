@@ -4,14 +4,17 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:driver/components/bottom_sheet_comp.dart';
 import 'package:driver/components/bottom_sheet_compV2.dart';
 import 'package:driver/components/connection_indicator.dart';
+import 'package:driver/components/custom_switch.dart';
 import 'package:driver/components/drawer_menu.dart';
 import 'package:driver/components/hamberger_menu.dart';
 import 'package:driver/components/map_sheet.dart';
 import 'package:driver/components/trip_request.dart';
+import 'package:driver/constants.dart';
 import 'package:driver/controllers/network_controller.dart';
 import 'package:driver/controllers/permission_controller.dart';
 import 'package:driver/controllers/position_controller.dart';
 import 'package:driver/controllers/trip_controller.dart';
+import 'package:driver/main.dart';
 import 'package:driver/screens/login_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -34,6 +37,8 @@ class HomeScreen2 extends StatefulWidget {
 }
 
 class _HomeScreen2State extends State<HomeScreen2> {
+  DatabaseReference driverRef = FirebaseDatabase.instance.ref('drivers');
+
   String driverName = 'Mesfin';
   String tripStatus = '';
   ConnectivityResult _connectivityResult = ConnectivityResult.none;
@@ -43,8 +48,7 @@ class _HomeScreen2State extends State<HomeScreen2> {
     // TODO: implement initState
     initialize();
     getTripStatus();
-
-
+    getOnlineStatus();
 //     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
 //   print('Got a message whilst in the foreground!');
 //   print('Message data: ${message.data}');
@@ -56,7 +60,65 @@ class _HomeScreen2State extends State<HomeScreen2> {
     super.initState();
   }
 
+  void getOnlineStatus() async {
+    String driverId = await secureStorage.read(key: 'driverId') ?? '';
+    driverRef
+        .child('/${driverId}/presence')
+        .onValue
+        .listen((DatabaseEvent event) {
+      dynamic data = event.snapshot.value;
+      if (data != null) {
+        dynamic status = data['status'];
+        if (status == "online") {
+          setState(() {
+            _isOnline = true;
+          });
+        } else {
+          setState(() {
+            _isOnline = false;
+          });
+        }
+      }
+    });
+  }
 
+  void setOffline() async {
+    String driverId = await secureStorage.read(key: 'driverId') ?? '';
+
+    driverRef.child('/${driverId}/presence').update({
+      "status": "offline",
+      'lastSeen': DateTime.now().millisecondsSinceEpoch,
+    }).then((_) {
+      // Data saved successfully!
+      sharedPref.setBool(WANT_TO_BE_ONLINE, false);
+      setState(() {
+        _isOnline = false;
+      });
+      print("update success");
+    }).catchError((error) {
+      // The write failed...
+      print("update error");
+    });
+  }
+
+  void setOnline() async {
+    String driverId = await secureStorage.read(key: 'driverId') ?? '';
+
+    driverRef.child('/${driverId}/presence').update({
+      "status": "online",
+      'lastSeen': DateTime.now().millisecondsSinceEpoch,
+    }).then((_) {
+      // Data saved successfully!
+      sharedPref.setBool(WANT_TO_BE_ONLINE, true);
+      setState(() {
+        _isOnline = true;
+      });
+      print("update success");
+    }).catchError((error) {
+      // The write failed...
+      print("update error");
+    });
+  }
 
   void initialize() async {
     await Permission.notification.isDenied.then(
@@ -76,6 +138,20 @@ class _HomeScreen2State extends State<HomeScreen2> {
     print('tripStatus------$tripStatus');
   }
 
+  bool _isOnline = false;
+
+  void _toggleStatus() {
+    // setOffline() ;
+    if (_isOnline) {
+      setOffline();
+    } else {
+      setOnline();
+    }
+    // setState(() {
+    //   _isOnline = !_isOnline;
+    // });
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -90,39 +166,66 @@ class _HomeScreen2State extends State<HomeScreen2> {
         width: double.infinity,
         child: Center(
           child: Stack(children: [
-           
             MapSheet(),
-            Obx((){
-              if(!networkController.isNetworkUsable){
-                return  Positioned(
-                top: 30,
-                left:0,
-                right: 0,
-                child: Container(
-                  // width: double.infinity,
-                  padding: EdgeInsets.all(3),
-                decoration: BoxDecoration(color: Colors.red),
-           
-                  // padding: EdgeInsets.all(5),
-                  child: Center(
-                  child :
-                      Text(
-                        "Network unavailable",
-                        style: TextStyle(color: Colors.white),
+            Obx(() {
+              if (!networkController.isNetworkUsable.value) {
+                return Positioned(
+                    top: 30,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      // width: double.infinity,
+                      padding: EdgeInsets.all(3),
+                      decoration: BoxDecoration(color: Colors.red),
+
+                      // padding: EdgeInsets.all(5),
+                      child: Center(
+                        child: Text(
+                          "Network unavailable",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        // OutlinedButton(onPressed: (){
+                        //  networkController.hasUsableNetwork();
+                        // }, child: Text("Retry"))
                       ),
-                      // OutlinedButton(onPressed: (){
-                      //  networkController.hasUsableNetwork();
-                      // }, child: Text("Retry"))
-                    
-                  ),
-                ));
-              }else{
+                    ));
+              } else {
                 return Text("");
               }
-            })
-             ,
+            }),
             HambergerMenu(),
             DashboardV2(),
+            // Positioned(
+            //     bottom: MediaQuery.of(context).size.height * 0.6,
+            //     left: 30,
+            //     child: InkWell(
+            //       onTap: _toggleStatus,
+            //       child: Container(
+            //         padding: EdgeInsets.all(8.0),
+            //         decoration: BoxDecoration(
+            //           borderRadius: BorderRadius.circular(20.0),
+            //           color: _isOnline ? Colors.green : Colors.red,
+            //         ),
+            //         child: Row(
+            //           mainAxisSize: MainAxisSize.min,
+            //           children: [
+            //             Icon(
+            //               _isOnline ? Icons.check : Icons.close,
+            //               color: Colors.white,
+            //             ),
+            //             SizedBox(width: 8.0),
+            //             Text(
+            //               _isOnline ? 'Online' : 'Offline',
+            //               style: TextStyle(
+            //                 color: Colors.white,
+            //                 fontWeight: FontWeight.bold,
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //     )
+            //           )
             // Positioned(
             //   top: 35,
             //   right: 16,

@@ -49,7 +49,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
     getNewRequest();
     _pickupTimeController.text = "Now";
 
-    _riderPhoneController.text="09";
+    _riderPhoneController.text = "09";
     super.initState();
   }
 
@@ -94,11 +94,9 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                   status: "",
                   dateSent: formattedDate);
             }
-                      print("data null ------------");
-
+            print("data null ------------");
           });
-
-        }else{
+        } else {
           print("data null ------------");
         }
 
@@ -117,7 +115,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
     super.dispose();
   }
 
- void createRequest() async {
+  void createRequest() async {
     setState(() {
       _creatingNewOrder = true;
     });
@@ -138,14 +136,14 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
       await driverRef.child('/${driverId}/tripRequest/requestStatus').update({
         "status": "pending",
       });
-         setState(() {
-      _creatingNewOrder = false;
-    });
+      setState(() {
+        _creatingNewOrder = false;
+      });
     } catch (e) {
       print(e);
-          setState(() {
-      _creatingNewOrder = false;
-    });
+      setState(() {
+        _creatingNewOrder = false;
+      });
     }
 
     // driverRef.child('/${driverId}/tripRequest/requestDetail').update({
@@ -292,9 +290,9 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
     _riderNameController.clear();
     _pickupAddressController.clear();
     _destinationAddressController.clear();
-  _pickupTimeController.text = "Now";
+    _pickupTimeController.text = "Now";
 
-    _riderPhoneController.text="09";
+    _riderPhoneController.text = "09";
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -371,37 +369,40 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
             ),
           ),
           actions: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-               OutlinedButton(
-                child: Text('Cancel'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              OutlinedButton(
-                child: Text('Submit',style: TextStyle(color: Colors.green),),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Form is valid, do something with the data
-                    String riderName = _riderNameController.text;
-                    String riderPhone = _riderPhoneController.text;
-                    String pickupAddress = _pickupAddressController.text;
-                    String destinationAddress =
-                        _destinationAddressController.text;
-                    String pickupTime = _pickupTimeController.text;
-                    createRequest();
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                OutlinedButton(
+                  child: Text('Cancel'),
+                  onPressed: () {
                     Navigator.of(context).pop();
-                    // Close the dialog
+                  },
+                ),
+                OutlinedButton(
+                  child: Text(
+                    'Submit',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      // Form is valid, do something with the data
+                      String riderName = _riderNameController.text;
+                      String riderPhone = _riderPhoneController.text;
+                      String pickupAddress = _pickupAddressController.text;
+                      String destinationAddress =
+                          _destinationAddressController.text;
+                      String pickupTime = _pickupTimeController.text;
+                      createRequest();
+                      Navigator.of(context).pop();
+                      // Close the dialog
 
-                    // Perform any further actions with the captured data
-                    // ...
-                  }
-                },
-              ),
-          ],)
-            
+                      // Perform any further actions with the captured data
+                      // ...
+                    }
+                  },
+                ),
+              ],
+            )
           ],
         );
       },
@@ -498,8 +499,8 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                               // margin: EdgeInsets.only(bottom: 5),
                               // color: Color.fromARGB(255, 245, 242, 242),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                // mainAxisAlignment:
+                                //     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
@@ -507,11 +508,15 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                                         Icons.near_me,
                                         color: Colors.red,
                                       ),
-                                      Text("Pickup"),
+                                      // Text("Pickup"),
                                     ],
                                   ),
-                                  Text(
-                                      '${tripRequestDetail?.riderPickUpAddress}'),
+                                  Flexible(
+                                    child: Text(
+                                      '${tripRequestDetail?.riderPickUpAddress}',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -521,8 +526,8 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                               // margin: EdgeInsets.only(bottom: 5),
                               // color: Color.fromARGB(255, 245, 242, 242),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                // mainAxisAlignment:
+                                //     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
@@ -530,11 +535,15 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                                         Icons.place,
                                         color: Colors.green,
                                       ),
-                                      Text("Destination"),
+                                      // Text("Destination"),
                                     ],
                                   ),
-                                  Text(
-                                      '${tripRequestDetail?.riderDestinatinoAddress}'),
+                                  Flexible(
+                                    child: Text(
+                                      '${tripRequestDetail?.riderDestinatinoAddress}',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -600,21 +609,18 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          
                           ElevatedButton(
                             onPressed: () {
-                              try{
-  showYesOrNoDialog(context,
-                                      "Are you sure you want to reject the trip ?")
-                                  .then((value) => {
-                                        if(value !=null){
-                                          if (value) {rejectTripRequest()}
-                                        }
-                                      });
-                              }catch(e){
-
-                              }
-                            
+                              try {
+                                showYesOrNoDialog(context,
+                                        "Are you sure you want to reject the trip ?")
+                                    .then((value) => {
+                                          if (value != null)
+                                            {
+                                              if (value) {rejectTripRequest()}
+                                            }
+                                        });
+                              } catch (e) {}
                             },
                             child: Text('Reject'),
                           ),
@@ -634,19 +640,18 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                            ElevatedButton(
+                          ElevatedButton(
                             onPressed: () {
-                             try{
-                                 showYesOrNoDialog(context,
-                                      "Are you sure you want to cancel the trip ?")
-                                  .then((value) => {
-                                        if(value !=null){
-                                          if (value) {cancelTrepRequest()}
-                                        }
-                                      });
-                             }catch(e){
-
-                             }
+                              try {
+                                showYesOrNoDialog(context,
+                                        "Are you sure you want to cancel the trip ?")
+                                    .then((value) => {
+                                          if (value != null)
+                                            {
+                                              if (value) {cancelTrepRequest()}
+                                            }
+                                        });
+                              } catch (e) {}
                             },
                             child: Text('Cancle Trip'),
                           ),
@@ -655,37 +660,31 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                               setState(() {
                                 _isStartTripButtonDisabled = true;
                               });
-                             try{
- showYesOrNoDialog(context, "Confirm Start Trip")
-                                  .then((value) => {
-                                        if(value !=null){
-                                          if (value)
-                                          {
-                                            tripController
-                                                .startTrip(
-                                                    tripRequestDetail!
-                                                        .riderName,
-                                                    tripRequestDetail!
-                                                        .riderPhone)
-                                                .then((value) => {
-                                                      setState(() {
-                                                        _isStartTripButtonDisabled =
-                                                            true;
-                                                      })
-                                                    })
-                                          }
-                                        }
-                                      });
-                             }catch(e){
-
-                             }
+                              try {
+                                showYesOrNoDialog(context, "Confirm Start Trip")
+                                    .then((value) => {
+                                          if (value != null)
+                                            {
+                                              if (value)
+                                                {
+                                                  tripController
+                                                      .startTrip(tripRequestDetail!)
+                                                      .then((value) => {
+                                                            setState(() {
+                                                              _isStartTripButtonDisabled =
+                                                                  true;
+                                                            })
+                                                          })
+                                                }
+                                            }
+                                        });
+                              } catch (e) {}
                             },
                             child: Text(
                               'Start Trip',
                               style: TextStyle(color: Colors.blue),
                             ),
                           ),
-                        
                         ],
                       ),
                     if (tripRequestDetail?.status == "started")
@@ -720,34 +719,36 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                             // ),
                             Container(
                               width: double.infinity,
-                              child: _creatingNewOrder?Center(child: CircularProgressIndicator()):ElevatedButton(
-                                onPressed: () {
-                                  // Get.to(CarsScreen());
+                              child: _creatingNewOrder
+                                  ? Center(child: CircularProgressIndicator())
+                                  : ElevatedButton(
+                                      onPressed: () {
+                                        // Get.to(CarsScreen());
 
-                                  _openDialog();
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  backgroundColor:
-                                      Color.fromARGB(255, 244, 90, 82),
-                                  padding: EdgeInsets.all(
-                                      12), // Adjust the padding as needed
-                                  shadowColor:
-                                      Color.fromARGB(255, 222, 217, 217),
-                                  elevation: 20,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        8), // Adjust the border radius as needed
-                                  ),
-                                  // side: BorderSide(
-                                  //   color: Color.fromARGB(255, 254, 17, 0), // Set the color of the button outline
-                                  //   width: 2.0, // Set the width of the button outline
-                                  // ),
-                                ),
-                                child: Text(
-                                  "Create New Order",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
+                                        _openDialog();
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor:
+                                            Color.fromARGB(255, 244, 90, 82),
+                                        padding: EdgeInsets.all(
+                                            12), // Adjust the padding as needed
+                                        shadowColor:
+                                            Color.fromARGB(255, 222, 217, 217),
+                                        elevation: 20,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              8), // Adjust the border radius as needed
+                                        ),
+                                        // side: BorderSide(
+                                        //   color: Color.fromARGB(255, 254, 17, 0), // Set the color of the button outline
+                                        //   width: 2.0, // Set the width of the button outline
+                                        // ),
+                                      ),
+                                      child: Text(
+                                        "Create New Order",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
                             )
                           ],
                         ),

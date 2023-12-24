@@ -236,7 +236,7 @@ driverRef
                                   
                                   onPressed: () {
                                     _makePhoneCall(tripRequestDetail!
-                                        .riderPhone); // Replace with the desired phone number
+                                        .riderPhone!); // Replace with the desired phone number
                                   },
                                   icon: Icon(Icons.call),
                                 ),
@@ -323,7 +323,7 @@ driverRef
                                   if (value)
                                     {
                                       tripController
-                                          .startTrip(tripRequestDetail!.riderName,tripRequestDetail!.riderPhone)
+                                          .startTrip(tripRequestDetail!)
                                           .then((value) => {
                                                 setState(() {
                                                   _isStartTripButtonDisabled =

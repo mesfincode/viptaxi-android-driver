@@ -10,7 +10,10 @@ const HEADER_APPLICATION_ID = 'X-Parse-Application-Id';
 const HEADER_REST_API_KEY = 'X-Parse-REST-API-Key';
 
 // const DEV_BASE_URL = 'https://dashboard.viptaxi.et/dev-api';
-const DEV_BASE_URL = 'https://backend.viptaxi.et/dev-api/api';
+const DEV_BASE_URL = 'https://backend.viptaxi.et/devapi/api';
 const PROD_BASE_URL ='https://backend.viptaxi.et/restapi/api';
 
-const PRODUCTION = true;
+// const PRODUCTION = true;
+const PRODUCTION = false;
+
+const   WANT_TO_BE_ONLINE = "driver-presence-choice";

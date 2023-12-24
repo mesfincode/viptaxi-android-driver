@@ -1,6 +1,7 @@
 
 
 import 'package:driver/controllers/request_controller.dart';
+import 'package:driver/models/TripRequestDetail.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
@@ -29,7 +30,7 @@ class TripController extends GetxController {
     super.onInit();
   }
 
-  Future<void> startTrip(String riderName, String riderPhone) async {
+  Future<void> startTrip(TripRequestDetail tripRequestDetail) async {
     print('trip controller');
 
     _isLoading.value = true;
@@ -40,8 +41,8 @@ class TripController extends GetxController {
 
     tripCreatedOnServer = await requestController.startTripRequest(
         {'latitude': latitude, 'longitude': longitude, 'geohash': 'aksjff'},
-        riderName,
-        riderPhone);
+        tripRequestDetail.riderName!,
+        tripRequestDetail.riderPhone!,tripRequestDetail.riderPickUpAddress!,tripRequestDetail.riderDestinatinoAddress!);
     if (tripCreatedOnServer) {
       print('trip created on the server continue');
       service.invoke("start-timer1");

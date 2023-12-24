@@ -2,12 +2,14 @@ import 'package:driver/controllers/background_service_controller.dart';
 import 'package:driver/controllers/permission_controller.dart';
 import 'package:driver/controllers/position_controller.dart';
 import 'package:driver/controllers/profile_controller.dart';
+import 'package:driver/controllers/realtime_database_controller.dart';
 import 'package:driver/firebase_options.dart';
 import 'package:driver/services/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
 import 'package:driver/screens/splash_screen.dart';
@@ -18,9 +20,13 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'controllers/network_controller.dart';
 
+late SharedPreferences sharedPref;
+  final secureStorage = new FlutterSecureStorage();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+    sharedPref = await SharedPreferences.getInstance();
+
      await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -132,6 +138,7 @@ class MyApp extends StatelessWidget {
           Get.lazyPut<NetworkController>(() => NetworkController());
           Get.put(ProfileController());
           Get.put(BackgroundServiceController());
+          Get.put(RealtimeDatabaseController());
           // Get.put(PermissionController());
         }),
         theme: ThemeData(

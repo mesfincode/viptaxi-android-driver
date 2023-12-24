@@ -25,7 +25,7 @@ class FirebaseMessagingService {
         Map<String, dynamic> data = message.data;
         print(data['tripReqestsId']);
         // Process the data as needed
-        // For example, print the values
+      
         sharedPreferences.setString('tripReqestsId', data['tripReqestsId']);
         data.forEach((key, value) {
           print('$key: $value');
