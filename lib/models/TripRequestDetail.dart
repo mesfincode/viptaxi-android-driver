@@ -6,6 +6,8 @@ class TripRequestDetail {
   String? pickUpTime;
   String? status;
   String? dateSent;
+  String? sentBy;
+  String? driverId;
   TripRequestDetail({
      this.riderName,
      this.riderPhone,
@@ -14,7 +16,8 @@ class TripRequestDetail {
      this.pickUpTime,
      this.status,
      this.dateSent,
-
+     this.sentBy,
+     this.driverId
   });
 
     factory TripRequestDetail.fromJson(Map<String, dynamic> json) {
@@ -26,6 +29,8 @@ class TripRequestDetail {
       pickUpTime: json['pickUpTime'],
       status: json['status'],
       dateSent: json['dateSent'],
+      sentBy: json['sentBy'],
+      driverId: json['driverId']
       // createdAt: json['createdAt'],
     );
   }
@@ -39,6 +44,8 @@ class TripRequestDetail {
     data['pickUpTime'] = this.pickUpTime;
     data['status'] = this.status;
     data['dateSent'] = this.dateSent;
+    data['sentBy']= this.sentBy;
+    data['driverId'] = this.driverId;
     return data;
   }
 }

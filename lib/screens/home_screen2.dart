@@ -195,37 +195,37 @@ class _HomeScreen2State extends State<HomeScreen2> {
             }),
             HambergerMenu(),
             DashboardV2(),
-            // Positioned(
-            //     bottom: MediaQuery.of(context).size.height * 0.6,
-            //     left: 30,
-            //     child: InkWell(
-            //       onTap: _toggleStatus,
-            //       child: Container(
-            //         padding: EdgeInsets.all(8.0),
-            //         decoration: BoxDecoration(
-            //           borderRadius: BorderRadius.circular(20.0),
-            //           color: _isOnline ? Colors.green : Colors.red,
-            //         ),
-            //         child: Row(
-            //           mainAxisSize: MainAxisSize.min,
-            //           children: [
-            //             Icon(
-            //               _isOnline ? Icons.check : Icons.close,
-            //               color: Colors.white,
-            //             ),
-            //             SizedBox(width: 8.0),
-            //             Text(
-            //               _isOnline ? 'Online' : 'Offline',
-            //               style: TextStyle(
-            //                 color: Colors.white,
-            //                 fontWeight: FontWeight.bold,
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       ),
-            //     )
-            //           )
+            Positioned(
+                bottom: MediaQuery.of(context).size.height * 0.6,
+                left: 30,
+                child: InkWell(
+                  onTap: _toggleStatus,
+                  child: Container(
+                    padding: EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      color: _isOnline ? Colors.green : Colors.red,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isOnline ? Icons.check : Icons.close,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8.0),
+                        Text(
+                          _isOnline ? 'Online' : 'Offline',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                      )
             // Positioned(
             //   top: 35,
             //   right: 16,

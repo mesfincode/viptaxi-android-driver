@@ -1,5 +1,3 @@
-
-
 import 'package:driver/controllers/request_controller.dart';
 import 'package:driver/models/TripRequestDetail.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -30,6 +28,15 @@ class TripController extends GetxController {
     super.onInit();
   }
 
+Future<bool> acceptTripOnServer(TripRequestDetail tripRequestDetail) async {
+    String driverId = await storage.read(key: 'driverId') ?? '';
+    bool tripAcceptedOnServer = await requestController.acceptTripRequest(tripRequestDetail);
+    if(tripAcceptedOnServer){
+      return true;
+    }else{
+      return false;
+    }
+}
   Future<void> startTrip(TripRequestDetail tripRequestDetail) async {
     print('trip controller');
 
@@ -42,7 +49,9 @@ class TripController extends GetxController {
     tripCreatedOnServer = await requestController.startTripRequest(
         {'latitude': latitude, 'longitude': longitude, 'geohash': 'aksjff'},
         tripRequestDetail.riderName!,
-        tripRequestDetail.riderPhone!,tripRequestDetail.riderPickUpAddress!,tripRequestDetail.riderDestinatinoAddress!);
+        tripRequestDetail.riderPhone!,
+        tripRequestDetail.riderPickUpAddress!,
+        tripRequestDetail.riderDestinatinoAddress!);
     if (tripCreatedOnServer) {
       print('trip created on the server continue');
       service.invoke("start-timer1");
@@ -51,7 +60,7 @@ class TripController extends GetxController {
       print('Trip created on the server');
       String driverId = await storage.read(key: 'driverId') ?? '';
 
-      driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+      driverRef.child('/${driverId}/tripRequest/requestDetail').update({
         "status": "started",
       }).then((_) {
         // Data saved successfully!
@@ -76,7 +85,7 @@ class TripController extends GetxController {
     }
   }
 
-  stopTrip(BuildContext context,num price, num distance, String time) async {
+  stopTrip(BuildContext context, num price, num distance, String time) async {
     _isLoading.value = true;
 
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -101,7 +110,7 @@ class TripController extends GetxController {
       //   );
       String driverId = await storage.read(key: 'driverId') ?? '';
 
-      driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+      driverRef.child('/${driverId}/tripRequest/requestDetail').update({
         "status": "completed",
       }).then((_) {
         // Data saved successfully!
@@ -122,7 +131,8 @@ class TripController extends GetxController {
   }
 }
 
-void showTripRport(BuildContext context,num? price, num? distance, String? time) {
+void showTripRport(
+    BuildContext context, num? price, num? distance, String? time) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
@@ -222,7 +232,6 @@ void showTripRport(BuildContext context,num? price, num? distance, String? time)
               style: TextStyle(fontSize: 13, color: Colors.blue),
             ),
           ]),
-        
         ),
       ),
       actions: [
@@ -245,107 +254,113 @@ void showDiaalog(num? price, num? distance, String? time) {
     title: "Trip Report",
     content: SingleChildScrollView(
       child: Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet,
-                      color: Colors.blue,
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Text(
-                      "Price",
-                      style: TextStyle(fontSize: 18),
-                    )
-                  ],
+                Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.blue,
                 ),
-                Text("${price} Birr",
-                    style: TextStyle(color: Colors.green, fontSize: 21))
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  "Price",
+                  style: TextStyle(fontSize: 18),
+                )
               ],
             ),
-            Divider(),
+            Text("${price} Birr",
+                style: TextStyle(color: Colors.green, fontSize: 21))
+          ],
+        ),
+        Divider(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.speed,
-                      color: Colors.blue,
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Text(
-                      "Distance",
-                      style: TextStyle(fontSize: 18),
-                    )
-                  ],
+                Icon(
+                  Icons.speed,
+                  color: Colors.blue,
                 ),
-                Text("${double.parse(distance!.toStringAsFixed(1))} Km",
-                    style: TextStyle(color: Colors.black, fontSize: 18))
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  "Distance",
+                  style: TextStyle(fontSize: 18),
+                )
               ],
             ),
-            Divider(),
+            Text("${double.parse(distance!.toStringAsFixed(1))} Km",
+                style: TextStyle(color: Colors.black, fontSize: 18))
+          ],
+        ),
+        Divider(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.schedule,
-                      color: Colors.blue,
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Text(
-                      "Waiting",
-                      style: TextStyle(fontSize: 18),
-                    )
-                  ],
+                Icon(
+                  Icons.schedule,
+                  color: Colors.blue,
                 ),
-                Text("${time}",
-                    style: TextStyle(color: Colors.black, fontSize: 18))
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  "Waiting",
+                  style: TextStyle(fontSize: 18),
+                )
               ],
             ),
-            Divider(),
+            Text("${time}", style: TextStyle(color: Colors.black, fontSize: 18))
+          ],
+        ),
+        Divider(),
+        SizedBox(
+          height: 10,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CircleAvatar(
+              radius: 25,
+              backgroundImage: ExactAssetImage(
+                'assets/images/logo_bg_white.jpg', // Replace with your image path
+              ),
+            ),
             SizedBox(
               height: 10,
             ),
-            Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          CircleAvatar(
-            radius: 25,
-            backgroundImage: ExactAssetImage(
-              'assets/images/logo_bg_white.jpg', // Replace with your image path
+            Text(
+              'Thank you for choosing VIP Taxi!',
+              style: TextStyle(color: Colors.blue),
             ),
-          ),
-          SizedBox(height: 10,),
-          Text('Thank you for choosing VIP Taxi!',style: TextStyle(color: Colors.blue),),
-        ],
-      )
-          ]),
-        
+          ],
+        )
+      ]),
     ),
     actions: [
-  
-     Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-       TextButton(
-        onPressed: () {
-          // Perform action when the dialog button is pressed
-          Get.back();
-        },
-        child: Text("OK",style: TextStyle(color: Colors.blue),),
-      ),
-     ],)
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          TextButton(
+            onPressed: () {
+              // Perform action when the dialog button is pressed
+              Get.back();
+            },
+            child: Text(
+              "OK",
+              style: TextStyle(color: Colors.blue),
+            ),
+          ),
+        ],
+      )
     ],
   );
 }

@@ -75,25 +75,17 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
 
           final formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(date);
           setState(() {
-            if (tripRequestStatus != null) {
-              tripRequestDetail = TripRequestDetail(
-                  riderName: requestDetail['riderName'],
-                  riderPhone: requestDetail['riderPhone'],
-                  riderPickUpAddress: requestDetail['pickUpAddress'],
-                  riderDestinatinoAddress: requestDetail['destination'],
-                  pickUpTime: requestDetail['pickUpTime'],
-                  status: tripRequestStatus['status'],
-                  dateSent: formattedDate);
-            } else {
-              tripRequestDetail = TripRequestDetail(
-                  riderName: requestDetail['riderName'],
-                  riderPhone: requestDetail['riderPhone'],
-                  riderPickUpAddress: requestDetail['pickUpAddress'],
-                  riderDestinatinoAddress: requestDetail['destination'],
-                  pickUpTime: requestDetail['pickUpTime'],
-                  status: "",
-                  dateSent: formattedDate);
-            }
+           
+            tripRequestDetail = TripRequestDetail(
+                riderName: requestDetail['riderName'],
+                riderPhone: requestDetail['riderPhone'],
+                riderPickUpAddress: requestDetail['pickUpAddress'],
+                riderDestinatinoAddress: requestDetail['destination'],
+                pickUpTime: requestDetail['pickUpTime'],
+                status: requestDetail['status'],
+                dateSent: formattedDate,
+                sentBy: requestDetail['sentBy']
+                );
             print("data null ------------");
           });
         } else {
@@ -133,7 +125,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
         "sentBy": "${profileController.firstName}",
         "dateSent": DateTime.now().millisecondsSinceEpoch
       });
-      await driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+      await driverRef.child('/${driverId}/tripRequest/requestDetail').update({
         "status": "pending",
       });
       setState(() {
@@ -184,22 +176,32 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
 
   void acceptRequest() async {
     String driverId = await storage.read(key: 'driverId') ?? '';
-
-    driverRef.child('/${driverId}/tripRequest/requestStatus').update({
-      "status": "accepted",
-    }).then((_) {
-      // Data saved successfully!
-      print("update success");
-    }).catchError((error) {
-      // The write failed...
-      print("update error");
-    });
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String latitude = sharedPreferences.getString('currentLatitude') ?? '--';
+    String longitude = sharedPreferences.getString('currentLongitude') ?? '--';
+    tripRequestDetail?.driverId = driverId;
+     tripController.acceptTripOnServer(tripRequestDetail!).then((value) => {
+      if(value){
+        print("accepted")
+      }
+     });
+    // driverRef.child('/${driverId}/tripRequest/requestDetail').update({
+    //   // "driverCurrentLat":latitude,
+    //   // "driverCurrentLng":longitude,
+    //   "status": "accepted",
+    // }).then((_) {
+    //   // Data saved successfully!
+    //   print("update success");
+    // }).catchError((error) {
+    //   // The write failed...
+    //   print("update error");
+    // });
   }
 
   void rejectTripRequest() async {
     String driverId = await storage.read(key: 'driverId') ?? '';
 
-    driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+    driverRef.child('/${driverId}/tripRequest/requestDetail').update({
       "status": "rejected",
     }).then((_) {
       // Data saved successfully!
@@ -213,7 +215,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
   void cancelTrepRequest() async {
     String driverId = await storage.read(key: 'driverId') ?? '';
 
-    driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+    driverRef.child('/${driverId}/tripRequest/requestDetail').update({
       "status": "canceled",
     }).then((_) {
       // Data saved successfully!
@@ -227,7 +229,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
   void startTrip() async {
     String driverId = await storage.read(key: 'driverId') ?? '';
 
-    driverRef.child('/${driverId}/tripRequest/requestStatus').update({
+    driverRef.child('/${driverId}/tripRequest/requestDetail').update({
       "status": "started",
     }).then((_) {
       // Data saved successfully!
@@ -668,7 +670,8 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                                               if (value)
                                                 {
                                                   tripController
-                                                      .startTrip(tripRequestDetail!)
+                                                      .startTrip(
+                                                          tripRequestDetail!)
                                                       .then((value) => {
                                                             setState(() {
                                                               _isStartTripButtonDisabled =

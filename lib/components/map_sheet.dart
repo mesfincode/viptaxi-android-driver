@@ -106,6 +106,7 @@ class _MapSheetState extends State<MapSheet> {
             _mapController?.animateCamera(CameraUpdate.newLatLng(
                 LatLng(position.latitude, position.longitude)))
           });
+          storeCurrentPosition(position);
       // _getAddressFromLatLng(_currentPosition!);
       // _calculateDistance(position);
       // print('position'+position.toString() + ' speed: ' + position.speed.toString() + ' distance: ' + _distance.toString());

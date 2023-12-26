@@ -5,6 +5,7 @@ import 'package:dio/io.dart';
 import 'package:driver/constants.dart';
 import 'package:driver/constants/headers.dart';
 import 'package:driver/controllers/profile_controller.dart';
+import 'package:driver/models/TripRequestDetail.dart';
 import 'package:driver/screens/home_screen2.dart';
 import 'package:driver/services/firebase_messaging.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -298,6 +299,22 @@ class RequestController extends GetxController {
     }
   }
 
+ Future<bool> acceptTripRequest(TripRequestDetail tripRequestDetail) async {
+    String driverId = await storage.read(key: 'driverId') ?? '';
+    
+    Response? response = await makeRequest('functions/acceptTrip', 'post', tripRequestDetail.toJson());
+    print("trip create response $response");
+    if (response?.statusCode == 200 || response?.statusCode == 201) {
+      print("accpet trip success");
+
+
+      return true;
+    } else {
+            print("accpet trip failed");
+
+      return false;
+    }
+  }
   Future<bool> startTripRequest(dynamic startLocation,String riderName,String riderPhone,String pickUpAddress,String destinationAddress) async {
     String driverId = await storage.read(key: 'driverId') ?? '';
     print("make trip start request");
