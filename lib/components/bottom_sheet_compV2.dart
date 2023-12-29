@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'dart:math';
 
 import 'package:driver/components/blinking_text.dart';
+import 'package:driver/constants.dart';
 import 'package:driver/controllers/profile_controller.dart';
 import 'package:driver/controllers/trip_controller.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -176,19 +177,27 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
 
   void acceptRequest() async {
     String driverId = await storage.read(key: 'driverId') ?? '';
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String latitude = sharedPreferences.getString('currentLatitude') ?? '--';
-    String longitude = sharedPreferences.getString('currentLongitude') ?? '--';
-    tripRequestDetail?.driverId = driverId;
-     tripController.acceptTripOnServer(tripRequestDetail!).then((value) => {
-      if(value){
-        print("accepted")
-      }
-     });
+
+    // tripRequestDetail?.driverId = driverId;
+    //  tripController.updateTripStatusOnServer(tripRequestDetail!,ACCEPTED).then((value) => {
+    //   if(value){
+    //     print(ACCEPTED)
+    //   }
+    //  });
+
+  }
+
+  void declineTripRequest() async {
+    String driverId = await storage.read(key: 'driverId') ?? '';
+  
+    // tripRequestDetail?.driverId = driverId;
+    //  tripController.updateTripStatusOnServer(tripRequestDetail!,DECLINED).then((value) => {
+    //   if(value){
+    //     print("accepted")
+    //   }
+    //  });
     // driverRef.child('/${driverId}/tripRequest/requestDetail').update({
-    //   // "driverCurrentLat":latitude,
-    //   // "driverCurrentLng":longitude,
-    //   "status": "accepted",
+    //   "status": "declined",
     // }).then((_) {
     //   // Data saved successfully!
     //   print("update success");
@@ -198,32 +207,24 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
     // });
   }
 
-  void rejectTripRequest() async {
-    String driverId = await storage.read(key: 'driverId') ?? '';
-
-    driverRef.child('/${driverId}/tripRequest/requestDetail').update({
-      "status": "rejected",
-    }).then((_) {
-      // Data saved successfully!
-      print("update success");
-    }).catchError((error) {
-      // The write failed...
-      print("update error");
-    });
-  }
-
   void cancelTrepRequest() async {
-    String driverId = await storage.read(key: 'driverId') ?? '';
-
-    driverRef.child('/${driverId}/tripRequest/requestDetail').update({
-      "status": "canceled",
-    }).then((_) {
-      // Data saved successfully!
-      print("update success");
-    }).catchError((error) {
-      // The write failed...
-      print("update error");
-    });
+ String driverId = await storage.read(key: 'driverId') ?? '';
+  
+    // tripRequestDetail?.driverId = driverId;
+    //  tripController.updateTripStatusOnServer(tripRequestDetail!,CANCELED).then((value) => {
+    //   if(value){
+    //     print(CANCELED)
+    //   }
+    //  });
+    // driverRef.child('/${driverId}/tripRequest/requestDetail').update({
+    //   "status": "canceled",
+    // }).then((_) {
+    //   // Data saved successfully!
+    //   print("update success");
+    // }).catchError((error) {
+    //   // The write failed...
+    //   print("update error");
+    // });
   }
 
   void startTrip() async {
@@ -599,7 +600,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                             '${tripRequestDetail?.status}',
                             style: TextStyle(fontSize: 23, color: Colors.red),
                           ),
-                        if (tripRequestDetail?.status == "rejected")
+                        if (tripRequestDetail?.status == "declined")
                           Text(
                             '${tripRequestDetail?.status}',
                             style: TextStyle(fontSize: 23, color: Colors.red),
@@ -615,16 +616,16 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                             onPressed: () {
                               try {
                                 showYesOrNoDialog(context,
-                                        "Are you sure you want to reject the trip ?")
+                                        "Are you sure you want to decline the trip ?")
                                     .then((value) => {
                                           if (value != null)
                                             {
-                                              if (value) {rejectTripRequest()}
+                                              if (value) {declineTripRequest()}
                                             }
                                         });
                               } catch (e) {}
                             },
-                            child: Text('Reject'),
+                            child: Text('Decline'),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -707,7 +708,7 @@ class _BottomSheetComponentV2State extends State<BottomSheetComponentV2> {
                       ),
 
                     if (tripRequestDetail?.status == "completed" ||
-                        tripRequestDetail?.status == "rejected" ||
+                        tripRequestDetail?.status == "declined" ||
                         tripRequestDetail?.status == "canceled")
                       Container(
                         width: double.infinity,

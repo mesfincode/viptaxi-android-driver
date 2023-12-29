@@ -9,6 +9,7 @@ import 'package:driver/components/drawer_menu.dart';
 import 'package:driver/components/hamberger_menu.dart';
 import 'package:driver/components/map_sheet.dart';
 import 'package:driver/components/trip_request.dart';
+import 'package:driver/components/widgets/NetworkIndicatorWidget.dart';
 import 'package:driver/constants.dart';
 import 'package:driver/controllers/network_controller.dart';
 import 'package:driver/controllers/permission_controller.dart';
@@ -49,14 +50,7 @@ class _HomeScreen2State extends State<HomeScreen2> {
     initialize();
     getTripStatus();
     getOnlineStatus();
-//     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-//   print('Got a message whilst in the foreground!');
-//   print('Message data: ${message.data}');
 
-//   if (message.notification != null) {
-//     print('Message also contained a notification: ${message.notification}');
-//   }
-// });
     super.initState();
   }
 
@@ -154,45 +148,18 @@ class _HomeScreen2State extends State<HomeScreen2> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final drawerWidth = screenWidth * 0.60;
-    // PositionController positionController = Get.put(PositionController());
-    PermissionController permissionController = Get.put(PermissionController());
+ 
+  
     NetworkController networkController = Get.find();
     return Scaffold(
-      drawer: DrawerMenu(drawerWidth: drawerWidth, driverName: driverName),
+      drawer: DrawerMenu(),
       body: Container(
         height: double.infinity,
         width: double.infinity,
         child: Center(
           child: Stack(children: [
             MapSheet(),
-            Obx(() {
-              if (!networkController.isNetworkUsable.value) {
-                return Positioned(
-                    top: 30,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      // width: double.infinity,
-                      padding: EdgeInsets.all(3),
-                      decoration: BoxDecoration(color: Colors.red),
-
-                      // padding: EdgeInsets.all(5),
-                      child: Center(
-                        child: Text(
-                          "Network unavailable",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        // OutlinedButton(onPressed: (){
-                        //  networkController.hasUsableNetwork();
-                        // }, child: Text("Retry"))
-                      ),
-                    ));
-              } else {
-                return Text("");
-              }
-            }),
+            NetworkIndicatorWidget(networkController: networkController),
             HambergerMenu(),
             DashboardV2(),
             Positioned(
@@ -226,119 +193,7 @@ class _HomeScreen2State extends State<HomeScreen2> {
                   ),
                 )
                       )
-            // Positioned(
-            //   top: 35,
-            //   right: 16,
-            //   child: badges.Badge(
-            //     position: badges.BadgePosition.topEnd(top: 0, end: -2),
-            //     showBadge: false,
-            //     ignorePointer: false,
-            //     onTap: () {},
-            //     badgeContent: Text('3'),
-            //     child: IconButton(
-            //       iconSize: 35,
-            //       color: Colors.blue,
-            //       icon: Icon(Icons.notifications),
-            //       onPressed: () {
-            //         // Handle button press
-            //       },
-            //     ),
-            //   ),
-            // ),
-            // TripRequest()
-            // RecenterButton(
-            //     controller: _controller,
-            //     positionController: positionController),
-            // Positioned(
-            //     top: 40,
-            //     left: 20,
-            //     child: Column(
-            //       children: [
-            //         StreamBuilder<Map<String, dynamic>?>(
-            //           stream: FlutterBackgroundService().on('update'),
-            //           builder: (context, snapshot) {
-            //             if (!snapshot.hasData) {
-            //               return const Center(
-            //                 child: Text("--------"),
-            //               );
-            //             }
-
-            //             final data = snapshot.data!;
-            //             String? device = data["device"];
-            //             DateTime? date =
-            //                 DateTime.tryParse(data["current_date"]);
-            //             return Column(
-            //               children: [
-            //                 Text(device ?? 'Unknown'),
-            //                 Text(date.toString()),
-            //               ],
-            //             );
-            //           },
-            //         ),
-            //         StreamBuilder<Map<String, dynamic>?>(
-            //           stream: FlutterBackgroundService().on('trip'),
-            //           builder: (context, snapshot) {
-            //             if (snapshot.hasData) {
-            //               final data = snapshot.data!;
-            //               tripStatus = data["tripStatus"];
-            //               if (tripStatus != "started") {
-            //                 return ElevatedButton(
-            //                   child: Text("start-timer1"),
-            //                   onPressed: () async {
-            //                     final service = FlutterBackgroundService();
-            //                     var isRunning = await service.isRunning();
-            //                     service.invoke("start-timer1");
-            //                     setState(() {});
-            //                   },
-            //                 );
-            //               } else {
-            //                 return ElevatedButton(
-            //                   child: Text("stop-timer1"),
-            //                   onPressed: () async {
-            //                     final service = FlutterBackgroundService();
-            //                     var isRunning = await service.isRunning();
-            //                     service.invoke("stop-timer1");
-            //                     setState(() {});
-            //                   },
-            //                 );
-            //               }
-            //             } else {
-            //               //    final data = snapshot.data!;
-            //               // tripStatus = data["tripStatus"];
-            //               print('tripStatus:===== $tripStatus');
-            //               if (tripStatus != "started") {
-            //                 return ElevatedButton(
-            //                   child: Text("start-timer1"),
-            //                   onPressed: () async {
-            //                     final service = FlutterBackgroundService();
-            //                     var isRunning = await service.isRunning();
-            //                     service.invoke("start-timer1");
-            //                     setState(() {});
-            //                   },
-            //                 );
-            //               } else {
-            //                 return ElevatedButton(
-            //                   child: Text("stop-timer1"),
-            //                   onPressed: () async {
-            //                     final service = FlutterBackgroundService();
-            //                     var isRunning = await service.isRunning();
-            //                     service.invoke("stop-timer1");
-            //                     setState(() {});
-            //                   },
-            //                 );
-            //               }
-            //             }
-
-            //             // return Column(
-            //             //   children: [
-            //             //     Text(device ?? 'Unknown'),
-            //             //     Text(date.toString()),
-            //             //   ],
-            //             // );
-            //           },
-            //         ),
-            //       ],
-            //     ))
+           
           ]),
         ),
       ),
@@ -360,6 +215,8 @@ class _HomeScreen2State extends State<HomeScreen2> {
   //     zoom: 19.151926040649414)));
   // }
 }
+
+
 
 // class RecenterButton extends StatelessWidget {
 //   const RecenterButton({

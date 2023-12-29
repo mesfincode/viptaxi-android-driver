@@ -12,24 +12,27 @@ import 'package:get/get.dart';
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({
     super.key,
-    required this.drawerWidth,
-    required this.driverName,
+   
+   
   });
 
-  final double drawerWidth;
-  final String driverName;
+ 
 
   @override
   State<DrawerMenu> createState() => _DrawerMenuState();
 }
 
 class _DrawerMenuState extends State<DrawerMenu> {
+  
   @override
   Widget build(BuildContext context) {
+      final screenWidth = MediaQuery.of(context).size.width;
+
+      final drawerWidth = screenWidth * 0.60;
     RequestController requestController = Get.find();
     ProfileController profileController = Get.find();
     return Drawer(
-      width: widget.drawerWidth,
+      width: drawerWidth,
       backgroundColor: Colors.white,
       child: ListView(
         padding: EdgeInsets.zero,

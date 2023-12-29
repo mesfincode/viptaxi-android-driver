@@ -18,9 +18,9 @@ class NetworkController extends GetxController with WidgetsBindingObserver {
       _connectivityResult = result;
       // checkNetworkUsability();
       hasUsableNetwork().then((value) => {
-        if(!value){
-          Get.to(NetworkIndicatorScreen())
-        }
+        // if(!value){
+        //   Get.to(NetworkIndicatorScreen())
+        // }
       });
     });
   }

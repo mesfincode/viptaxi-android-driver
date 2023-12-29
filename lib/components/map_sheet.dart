@@ -168,6 +168,9 @@ class _MapSheetState extends State<MapSheet> {
         children: [
           GoogleMap(
             mapType: MapType.normal,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
             initialCameraPosition: CameraPosition(
                 bearing: 2.8334901395799,
                 target:
@@ -175,12 +178,12 @@ class _MapSheetState extends State<MapSheet> {
                 tilt: 30.440717697143555,
                 zoom: 16.151926040649414),
             markers: {
-              Marker(
-                markerId: MarkerId('current_position'),
-                position:
-                    LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                // icon: markerIcon
-              )
+              // Marker(
+              //   markerId: MarkerId('current_position'),
+              //   position:
+              //       LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+              //   // icon: markerIcon
+              // )
             },
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
@@ -209,7 +212,7 @@ class _MapSheetState extends State<MapSheet> {
         ],
       );
     } else {
-      return CircularProgressIndicator();
+      return Center(child: CircularProgressIndicator(),);
     }
     //   }
     // });

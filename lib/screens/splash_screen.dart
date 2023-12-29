@@ -1,6 +1,7 @@
 import 'package:driver/controllers/network_controller.dart';
 import 'package:driver/screens/edit_profile_screen.dart';
 import 'package:driver/screens/home_screen2.dart';
+import 'package:driver/screens/home_screen3.dart';
 import 'package:driver/screens/network_indicator_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -67,7 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => HomeScreen2()),
+                                      builder: (context) => HomeScreen3()),
                                 )
                               }
                           }

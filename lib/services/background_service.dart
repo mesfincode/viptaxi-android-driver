@@ -33,7 +33,7 @@ Future<void> initializeService() async {
     await flutterLocalNotificationsPlugin.initialize(
       const InitializationSettings(
         iOS: DarwinInitializationSettings(),
-        android: AndroidInitializationSettings('ic_bg_service_small'),
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ),
     );
   }
@@ -44,6 +44,7 @@ Future<void> initializeService() async {
       ?.createNotificationChannel(channel);
 
   await service.configure(
+     
     androidConfiguration: AndroidConfiguration(
       // this will be executed when app is in foreground or background in separated isolate
       onStart: onStart,
@@ -141,7 +142,6 @@ BackgroundServiceController backgroundServiceController = Get.put(BackgroundServ
 
     // service.stopSelf();
   });
-  
 
   if (service is AndroidServiceInstance) {
     if (await service.isForegroundService()) {

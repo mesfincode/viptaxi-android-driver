@@ -19,40 +19,39 @@ class FirebaseMessagingService {
           message.notification?.title ?? message.data['title'];
       final String? body = message.notification?.body ?? message.data['body'];
       // final String? tripId = message.data['data']['score'];
-      print('Message received with title: $title,  ');
-      if (message.data.isNotEmpty) {
-        // Access the data object
-        Map<String, dynamic> data = message.data;
-        print(data['tripReqestsId']);
-        // Process the data as needed
+      // print('Message received with title: $title,  ');
+      // if (message.data.isNotEmpty) {
+      //   // Access the data object
+      //   Map<String, dynamic> data = message.data;
+      //   print(data['tripReqestsId']);
+      //   // Process the data as needed
       
-        sharedPreferences.setString('tripReqestsId', data['tripReqestsId']);
-        data.forEach((key, value) {
-          print('$key: $value');
-        });
-      }
-      final AndroidNotificationChannel channel = AndroidNotificationChannel(
+      //   sharedPreferences.setString('tripReqestsId', data['tripReqestsId']);
+      //   data.forEach((key, value) {
+      //     print('$key: $value');
+      //   });
+      // }
+       final AndroidNotificationChannel channel = AndroidNotificationChannel(
         'channel_id',
         'channel_name',
-        // 'channel_description',
+        description:
+        'This channel is used for important notifications.', // description
 
         importance: Importance.high,
         playSound: true,
       );
-      final AndroidNotificationDetails androidDetails =
-          AndroidNotificationDetails(
-        channel.id,
-        channel.name,
-        // channel.description,
-        importance: Importance.high,
-        priority: Priority.high,
-        playSound: true,
-        styleInformation: BigTextStyleInformation(''),
-      );
-      final NotificationDetails notificationDetails =
-          NotificationDetails(android: androidDetails);
+  
       FlutterLocalNotificationsPlugin()
-          .show(0, title ?? '', body ?? '', notificationDetails);
+          .show(0, title ?? '', body ?? '',   NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          channelDescription: channel.description,
+          // TODO add a proper drawable resource to android, for now using
+          //      one that already exists in example app.
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),);
       // Handle incoming message
     });
 
@@ -64,25 +63,13 @@ class FirebaseMessagingService {
       final Map<String, dynamic> data = message.data;
       // _showNotificationDetails(title, body, data);
     });
-    // final RemoteMessage? initialMessage =
-    //     await FirebaseMessaging.instance.getInitialMessage();
-    // if (initialMessage != null) {
-    //   final String? title =
-    //       initialMessage.notification?.title ?? initialMessage.data['title'];
-    //   final String? body =
-    //       initialMessage.notification?.body ?? initialMessage.data['body'];
-    //   final Map<String, dynamic> data = initialMessage.data;
-    //   // _showNotificationDetails(title, body, data);
-    // }
+  
+
   }
 
   Future<String?> getDeviceToken() {
     return _firebaseMessaging.getToken();
   }
 
-  // void _showNotificationDetails(
-  //     String? title, String? body, Map<String, dynamic> data) {
-  //   // Navigate to a new screen or dialog to display the notification details
-  //   Get.to(NotificationDetailsScreen(title, body, data));
-  // }
+
 }

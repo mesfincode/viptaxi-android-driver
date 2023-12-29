@@ -299,10 +299,32 @@ class RequestController extends GetxController {
     }
   }
 
- Future<bool> acceptTripRequest(TripRequestDetail tripRequestDetail) async {
+ Future<dynamic> getTripDetail(String tripId) async {
     String driverId = await storage.read(key: 'driverId') ?? '';
-    
-    Response? response = await makeRequest('functions/acceptTrip', 'post', tripRequestDetail.toJson());
+    // var data ={
+    //   "tripDetail": tripRequestDetail.toJson(),
+    //   "updateType":updateType
+    // };
+    Response? response = await makeRequest('classes/clientRequest/${tripId}', 'get',{});
+    print("trip create response $response");
+    if (response?.statusCode == 200 || response?.statusCode == 201) {
+      print("accpet trip success");
+
+
+      return true;
+    } else {
+            print("accpet trip failed");
+
+      return false;
+    }
+  }
+ Future<bool> updateTripStatus(String requestId,String updateType) async {
+    String driverId = await storage.read(key: 'driverId') ?? '';
+    var data ={
+      "tripReqestsId":requestId,
+      "updateType":updateType
+    };
+    Response? response = await makeRequest('functions/acceptTrip', 'post', data);
     print("trip create response $response");
     if (response?.statusCode == 200 || response?.statusCode == 201) {
       print("accpet trip success");
@@ -373,29 +395,7 @@ class RequestController extends GetxController {
     }
   }
 
-// Future<dynamic > fetchNewTripRequest(String tripReqestsId) async {
-//     // String userId = await storage.read(key: 'userId') ?? '';
-//     String driverId = await storage.read(key: 'driverId') ?? '';
-// print("driverId ${driverId}");
-//  String sessionToken = await storage.read(key: 'sessionToken') ?? '';
 
-//       Options authOptions = Options(
-//         headers: {
-//           'X-Parse-Application-Id': APP_NAME,
-//           'X-Parse-REST-API-Key': APP_REST_API_KEY,
-//           'X-Parse-Session-Token': sessionToken
-//         },
-//       );
-//     Response? response =await _dio.get('https://sfu.insat.gov.et/restapi/parse/classes/tripRequests/$tripReqestsId',options: authOptions ,data: {});
-//    print(response);
-//     if (response?.statusCode == 200) {
-//       print("fetch new trip");
-//       print(response);
-//       return response.data;
-//     } else {
-//       return null;
-//     }
-//   }
 
   Future<Response<dynamic>?> makeRequest(
       String path, String method, dynamic data) async {

@@ -28,15 +28,17 @@ class TripController extends GetxController {
     super.onInit();
   }
 
-Future<bool> acceptTripOnServer(TripRequestDetail tripRequestDetail) async {
-    String driverId = await storage.read(key: 'driverId') ?? '';
-    bool tripAcceptedOnServer = await requestController.acceptTripRequest(tripRequestDetail);
-    if(tripAcceptedOnServer){
+  Future<bool> updateTripStatusOnServer(String requestId, String statusType) async {
+    // String driverId = await storage.read(key: 'driverId') ?? '';
+    bool tripAcceptedOnServer =
+        await requestController.updateTripStatus(requestId, statusType);
+    if (tripAcceptedOnServer) {
       return true;
-    }else{
+    } else {
       return false;
     }
-}
+  }
+
   Future<void> startTrip(TripRequestDetail tripRequestDetail) async {
     print('trip controller');
 
