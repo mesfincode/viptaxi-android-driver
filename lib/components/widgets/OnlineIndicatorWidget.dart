@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:driver/constants.dart';
 import 'package:driver/main.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -12,8 +14,10 @@ class OnlineIndicatorWidget extends StatefulWidget {
 }
 
 class _OnlineIndicatorWidgetState extends State<OnlineIndicatorWidget> {
-    bool _isOnline = false;
- void setOnline() async {
+    late StreamSubscription<DatabaseEvent> subscription;
+
+  bool _isOnline = false;
+  void setOnline() async {
     String driverId = await secureStorage.read(key: 'driverId') ?? '';
 
     driverRef.child('/${driverId}/presence').update({
@@ -32,7 +36,7 @@ class _OnlineIndicatorWidgetState extends State<OnlineIndicatorWidget> {
     });
   }
 
- void setOffline() async {
+  void setOffline() async {
     String driverId = await secureStorage.read(key: 'driverId') ?? '';
 
     driverRef.child('/${driverId}/presence').update({
@@ -50,9 +54,10 @@ class _OnlineIndicatorWidgetState extends State<OnlineIndicatorWidget> {
       print("update error");
     });
   }
-    void getOnlineStatus() async {
+
+  void getOnlineStatus() async {
     String driverId = await secureStorage.read(key: 'driverId') ?? '';
-    driverRef
+   subscription =   driverRef
         .child('/${driverId}/presence')
         .onValue
         .listen((DatabaseEvent event) {
@@ -71,6 +76,7 @@ class _OnlineIndicatorWidgetState extends State<OnlineIndicatorWidget> {
       }
     });
   }
+
   void _toggleStatus() {
     // setOffline() ;
     if (_isOnline) {
@@ -82,46 +88,51 @@ class _OnlineIndicatorWidgetState extends State<OnlineIndicatorWidget> {
     //   _isOnline = !_isOnline;
     // });
   }
-@override
+
+  @override
   void initState() {
     // TODO: implement initState
     getOnlineStatus();
     super.initState();
   }
+@override
+  void dispose() {
+    // TODO: implement dispose
+     subscription.cancel();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
-    return  Positioned(
-                top: 40,
-                right: 10,
-                child: InkWell(
-                  onTap: _toggleStatus,
-                  child: Container(
-                    padding: EdgeInsets.all(8.0),
-                    
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      borderRadius: BorderRadius.circular(20.0),
-                      color: _isOnline ? Colors.green : Colors.red,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _isOnline ? Icons.check : Icons.close,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 8.0),
-                        Text(
-                          _isOnline ? 'Online' : 'Offline',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+    return Positioned(
+        top: 40,
+        right: 10,
+        child: InkWell(
+          onTap: _toggleStatus,
+          child: Container(
+            padding: EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white),
+              borderRadius: BorderRadius.circular(20.0),
+              color: _isOnline ? Colors.green : Colors.red,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _isOnline ? Icons.check : Icons.close,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 8.0),
+                Text(
+                  _isOnline ? 'Online' : 'Offline',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
-                )
-                      );
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 }
