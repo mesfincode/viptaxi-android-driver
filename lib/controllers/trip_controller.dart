@@ -1,3 +1,4 @@
+import 'package:driver/constants.dart';
 import 'package:driver/controllers/request_controller.dart';
 import 'package:driver/models/TripRequestDetail.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -28,13 +29,41 @@ class TripController extends GetxController {
     super.onInit();
   }
 
-  Future<bool> updateTripStatusOnServer(String requestId, String statusType) async {
+  Future<bool> updateTripStatusOnServer(
+      String requestId, String statusType) async {
+    _isLoading.value = true;
     // String driverId = await storage.read(key: 'driverId') ?? '';
     bool tripAcceptedOnServer =
         await requestController.updateTripStatus(requestId, statusType);
     if (tripAcceptedOnServer) {
+      if (statusType == STARTED) {
+        print('trip created on the server continue');
+        service.invoke("start-timer1");
+        _isLoading.value = false;
+        _tripStatus.value = "started";
+        print('Trip created on the server');
+        String driverId = await storage.read(key: 'driverId') ?? '';
+
+        driverRef.child('/${driverId}/tripRequest/requestDetail').update({
+          "status": "started",
+        }).then((_) {
+          print("update success");
+        }).catchError((error) {
+          // The write failed...
+          print("update error");
+        });
+        Get.snackbar(
+          "Vip Taxi",
+          "Trip Started",
+          backgroundColor: Colors.green,
+          icon: const Icon(Icons.add_alert),
+          snackPosition: SnackPosition.TOP,
+        );
+      }
       return true;
     } else {
+      print('Trip could not be created on the server');
+      _isLoading.value = false;
       return false;
     }
   }
@@ -65,8 +94,6 @@ class TripController extends GetxController {
       driverRef.child('/${driverId}/tripRequest/requestDetail').update({
         "status": "started",
       }).then((_) {
-        // Data saved successfully!
-
         print("update success");
       }).catchError((error) {
         // The write failed...

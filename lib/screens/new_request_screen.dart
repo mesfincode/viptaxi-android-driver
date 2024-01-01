@@ -130,7 +130,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
 
     _getPolyline();
     getNewRequest();
-       WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       // This code will be executed after the widget is built
       panelController.open();
     });
@@ -153,7 +153,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
           setState(() {
             tripRequestStatus = requestDetail['status'];
           });
-            //  dynamic requestDetail = data['requestDetail'];
+          //  dynamic requestDetail = data['requestDetail'];
           // dynamic tripRequestStatus = data['requestStatus'];
 
 // DateTime pickuptime = DateTime.fromMillisecondsSinceEpoch(data['pickUpTime']);
@@ -163,7 +163,6 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
 
           final formattedDate = DateFormat('yyyy-MM-dd hh:mm a').format(date);
           setState(() {
-           
             tripRequestDetail = TripRequestDetail(
                 riderName: requestDetail['riderName'],
                 riderPhone: requestDetail['riderPhone'],
@@ -172,8 +171,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
                 pickUpTime: requestDetail['pickUpTime'],
                 status: requestDetail['status'],
                 dateSent: formattedDate,
-                sentBy: requestDetail['sentBy']
-                );
+                sentBy: requestDetail['sentBy']);
             print("data null ------------");
           });
         } else {
@@ -276,18 +274,23 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
   }
 
   void startTrip() async {
-    String driverId = await secureStorage.read(key: 'driverId') ?? '';
+    tripController
+        .updateTripStatusOnServer(widget.tripDetail['tripReqestsId'], STARTED)
+        .then((value) => {
+              if (value) {print(STARTED)}
+            });
+    // String driverId = await secureStorage.read(key: 'driverId') ?? '';
 
-    driverRef.child('/${driverId}/tripRequest/requestDetail').update({
-      "status": "started",
-    }).then((_) {
-      // Data saved successfully!
+    // driverRef.child('/${driverId}/tripRequest/requestDetail').update({
+    //   "status": "started",
+    // }).then((_) {
+    //   // Data saved successfully!
 
-      print("update success");
-    }).catchError((error) {
-      // The write failed...
-      print("update error");
-    });
+    //   print("update success");
+    // }).catchError((error) {
+    //   // The write failed...
+    //   print("update error");
+    // });
   }
 
   Future<dynamic> showYesOrNoDialog(BuildContext context, String content) {
@@ -356,8 +359,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
             polylines: Set<Polyline>.of(polylines.values),
           ),
         ),
-        // if(tripRequestStatus == STARTED)
-        DashboardV2(),
+        if (tripRequestStatus == STARTED) DashboardV2(),
         Positioned(
             top: 40,
             left: 20,
@@ -426,7 +428,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
                       borderRadius: BorderRadius.circular(10.0)),
                 ),
               ),
-              
+
               // if (!slidingPanelOpen)
               Column(
                 children: [
@@ -439,53 +441,53 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
                   //       panelController.open();
                   //     },
                   //     child: Text("Where to")),
-                if(tripRequestStatus != "pending")
-                  SingleChildScrollView(
-                    // scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          backgroundImage:
-                              AssetImage('assets/images/default_profile.jpeg'),
-                          radius: 25,
-                        ),
-                        SizedBox(
-                          width: 20,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${widget.tripDetail['riderName']}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Text(
-                              '${widget.tripDetail['riderPhone']}',
-                              style: TextStyle(fontSize: 16),
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          width: 20,
-                        ),
-                        Column(
-                          children: [
-                            IconButton(
-                              iconSize: 30,
-                              color: Colors.blue,
-                              onPressed: () {
-                                // _makePhoneCall(
-                                //     "0943766122"); // Replace with the desired phone number
-                              },
-                              icon: Icon(Icons.call),
-                            ),
-                          ],
-                        )
-                      ],
+                  if (tripRequestStatus != "pending")
+                    SingleChildScrollView(
+                      // scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            backgroundImage: AssetImage(
+                                'assets/images/default_profile.jpeg'),
+                            radius: 25,
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${widget.tripDetail['riderName']}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              Text(
+                                '${widget.tripDetail['riderPhone']}',
+                                style: TextStyle(fontSize: 16),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Column(
+                            children: [
+                              IconButton(
+                                iconSize: 30,
+                                color: Colors.blue,
+                                onPressed: () {
+                                  // _makePhoneCall(
+                                  //     "0943766122"); // Replace with the desired phone number
+                                },
+                                icon: Icon(Icons.call),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
-                  ),
                   Container(
                     // decoration: BoxDecoration(color: Colors.white),
                     child: Column(children: [
@@ -721,7 +723,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                             ElevatedButton(
+                            ElevatedButton(
                               onPressed: () {
                                 try {
                                   showYesOrNoDialog(context,
@@ -751,7 +753,7 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                             ElevatedButton(
+                            ElevatedButton(
                               onPressed: () {
                                 try {
                                   showYesOrNoDialog(context,
@@ -776,15 +778,16 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
                                               {
                                                 if (value)
                                                   {
-                                                    tripController
-                                                        .startTrip(
-                                                            tripRequestDetail!)
-                                                        .then((value) => {
-                                                              // setState(() {
-                                                              //   _isStartTripButtonDisabled =
-                                                              //       true;
-                                                              // })
-                                                            })
+                                                    // tripController
+                                                    //     .startTrip(
+                                                    //         tripRequestDetail!)
+                                                    //     .then((value) => {
+                                                    //           // setState(() {
+                                                    //           //   _isStartTripButtonDisabled =
+                                                    //           //       true;
+                                                    //           // })
+                                                    //         })
+                                                    startTrip()
                                                   }
                                               }
                                           });

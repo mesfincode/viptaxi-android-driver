@@ -342,7 +342,6 @@ class RequestController extends GetxController {
     print("make trip start request");
     dynamic data = {
       'startLocation': startLocation,
-      // 'endLocation': endLocation,
       'status': 'started',
       'totalFair': 0.0,
       'waitingTime': '00:00:00',

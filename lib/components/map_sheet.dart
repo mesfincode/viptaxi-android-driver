@@ -16,6 +16,8 @@ class MapSheet extends StatefulWidget {
 class _MapSheetState extends State<MapSheet> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
+  StreamSubscription<Position>? positionStream;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -31,12 +33,12 @@ class _MapSheetState extends State<MapSheet> {
       accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 100,
     );
-    StreamSubscription<Position> positionStream =
+    positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position position) {
       setState(() => {
             _currentPosition = position,
-       storeCurrentPosition(position),
+            storeCurrentPosition(position),
             _mapController?.animateCamera(CameraUpdate.newLatLng(
                 LatLng(position!.latitude, position!.longitude)))
           });
@@ -47,26 +49,26 @@ class _MapSheetState extends State<MapSheet> {
     super.initState();
   }
 
-  void storeCurrentPosition(Position position)async{
-            SharedPreferences sharedPreferences =await SharedPreferences.getInstance();
-            
-            await sharedPreferences.setString('currentLatitude', position.latitude.toString());
-            await sharedPreferences.setString('currentLongitude', position.longitude.toString());
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    positionStream!.cancel();
+    super.dispose();
+  }
 
+  void storeCurrentPosition(Position position) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
+    await sharedPreferences.setString(
+        'currentLatitude', position.latitude.toString());
+    await sharedPreferences.setString(
+        'currentLongitude', position.longitude.toString());
   }
 
   //  void getDriver() async {
   //   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   //   driverName = (await sharedPreferences.getString("driverName"))!;
   // }
-
-  @override
-  void dispose() {
-    // Cancel the timer when the widget is disposed to avoid memory leaks
-    // _cancelTimer();
-    super.dispose();
-  }
 
   // final Completer<GoogleMapController> _controller =
   //     Completer<GoogleMapController>();
@@ -80,7 +82,6 @@ class _MapSheetState extends State<MapSheet> {
   late Timer _timer;
   // int _counter = 0;
   bool started = false;
-
 
   // void _cancelTimer() {
   //   // Cancel the timer if it is active
@@ -106,7 +107,7 @@ class _MapSheetState extends State<MapSheet> {
             _mapController?.animateCamera(CameraUpdate.newLatLng(
                 LatLng(position.latitude, position.longitude)))
           });
-          storeCurrentPosition(position);
+      storeCurrentPosition(position);
       // _getAddressFromLatLng(_currentPosition!);
       // _calculateDistance(position);
       // print('position'+position.toString() + ' speed: ' + position.speed.toString() + ' distance: ' + _distance.toString());
@@ -173,8 +174,8 @@ class _MapSheetState extends State<MapSheet> {
             zoomControlsEnabled: false,
             initialCameraPosition: CameraPosition(
                 bearing: 2.8334901395799,
-                target:
-                    LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                target: LatLng(
+                    _currentPosition!.latitude, _currentPosition!.longitude),
                 tilt: 30.440717697143555,
                 zoom: 16.151926040649414),
             markers: {
@@ -189,30 +190,32 @@ class _MapSheetState extends State<MapSheet> {
               _controller.complete(controller);
             },
             compassEnabled: false,
-             rotateGesturesEnabled: false, 
+            rotateGesturesEnabled: false,
           ),
-
-           Positioned(
-        bottom: MediaQuery.of(context).size.height * 0.5,
-        left: 30,
-        child: IconButton(
-          onPressed: () async {
-            final GoogleMapController controller = await _controller.future;
-            await controller.animateCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    bearing: 2.8334901395799,
-                    target: LatLng(_currentPosition!.latitude,
-                        _currentPosition!.longitude),
-                    tilt: 30.440717697143555,
-                    zoom: 16.151926040649414)));
-          },
-          iconSize: 40,
-          icon: Icon(Icons.gps_fixed),
-        ))
+          Positioned(
+              bottom: MediaQuery.of(context).size.height * 0.5,
+              left: 30,
+              child: IconButton(
+                onPressed: () async {
+                  final GoogleMapController controller =
+                      await _controller.future;
+                  await controller.animateCamera(CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                          bearing: 2.8334901395799,
+                          target: LatLng(_currentPosition!.latitude,
+                              _currentPosition!.longitude),
+                          tilt: 30.440717697143555,
+                          zoom: 16.151926040649414)));
+                },
+                iconSize: 40,
+                icon: Icon(Icons.gps_fixed),
+              ))
         ],
       );
     } else {
-      return Center(child: CircularProgressIndicator(),);
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     }
     //   }
     // });
